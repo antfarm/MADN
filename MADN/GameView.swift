@@ -170,12 +170,7 @@ struct Die: View {
                     Circle()
                         .scale(0.5)
                         .fill(color)
-                        .stroke(.black, lineWidth: 3)
-                        .phaseAnimator([1.0, 1.1]) { dot, pulse in
-                            dot.scaleEffect(pulse)
-                        } animation: { pulse in
-                            .easeInOut(duration: 1.0).delay(pulse == 1.1 ? 3 : 0)
-                        }
+                        .stroke(.orange, lineWidth: 5)
                         .transition(.opacity)
                 }
             }
