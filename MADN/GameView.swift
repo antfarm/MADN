@@ -59,14 +59,14 @@ struct GameView: View {
                                     Circle().fill(fill ?? .clear)
                                 }
                                 .scaleEffect(field.last!.isLetter && game.piece(at: field) == nil ? 0.8 : 1)
-                                .overlay { if let player = game.piece(at: field) { Piece(color: colors[player], movable: game.movable.contains(field)) } }
+                                .overlay { if let player = game.piece(at: field) { Piece(color: colors[player], isMovable: game.movablePieces.contains(field)) } }
                                 .overlay { if showIDs { Text(field) } }
                                 .anchorPreference(key: CellCenters.self, value: .center) { center in
                                     [field: center]
                                 }
                                 .scaleEffect(0.95)
                                 .onTapGesture { game.move(field: field) }
-                                .allowsHitTesting(game.movable.contains(field))
+                                .allowsHitTesting(game.movablePieces.contains(field))
                         }
                     }
                 }
@@ -124,12 +124,12 @@ struct CellCenters: PreferenceKey {
 
 struct Piece: View {
     let color: Color
-    let movable: Bool
+    let isMovable: Bool
 
     var body: some View {
         Circle()
             .fill(color)
-            .overlay { Circle().strokeBorder(movable ? .orange : .black, lineWidth: movable ? 8 : 3) }
+            .overlay { Circle().strokeBorder(isMovable ? .orange : .black, lineWidth: isMovable ? 8 : 3) }
             .scaleEffect(0.75)
     }
 }

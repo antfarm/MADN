@@ -19,7 +19,7 @@ final class Game {
 
     var die: Int? { game.die }
 
-    var movable: Set<String> { game.movable() }
+    var movablePieces: Set<String> { game.movablePieces() }
 
     func piece(at field: String) -> Int? {
         game.piece(at: field)

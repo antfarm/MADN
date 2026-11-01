@@ -18,8 +18,8 @@ extension Game {
         return piece(at: field)?.rawValue
     }
 
-    public func movable() -> Set<String> {
-        let movable: Set<Field> = movable()
+    public func movablePieces() -> Set<String> {
+        let movable: Set<Field> = movablePieces()
 
         return Set(movable.map(\.description))
     }

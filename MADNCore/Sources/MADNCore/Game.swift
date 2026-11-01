@@ -31,46 +31,32 @@ public struct Game {
         pieces[field]
     }
 
-    func movable() -> Set<Field> {
-        let movable = pieces
-            .filter { $0.value == player } // own pieces
-            .keys
-            .filter { field in
-                guard let target = target(from: field) else { return false } // the target field exists
-                return piece(at: target) != player // not occupied by own piece
-            }
-
-        return Set(movable)
+    func pieces(for player: Player) -> Set<Field> {
+        Set(pieces.filter { $0.value == player }.keys)
     }
 
     func target(from field: Field) -> Field? {
-        guard let die else { return nil }
+        guard let owner = piece(at: field), // field is not empty
+              let die                       // die has been rolled
+        else { return nil }
 
-        switch field {
+        return switch field {
         case .out(let player, _):
-            return .track(Track.startField(for: player))
-
-        case .track(let field):
-            let start = Track.startField(for: player)
-            let newTravelled = field.travelled(from: start) + die
-
-            if let newField = Track.Field(travelled: newTravelled, from: start) {
-                return .track(newField)
-            }
-
-            if let newField = Home.Field(travelled: newTravelled) {
-                return .home(player, newField)
-            }
-
-            return nil
-
-        case .home(let player, let field):
-            if let newField = Home.Field(index: field.index + die) {
-                return .home(player, newField)
-            }
-
-            return nil
+            die == 6 ? .track(Track.startField(for: player)) : nil // bring in
+        default:
+            field.advanced(by: die, for: owner) // ordinary move
         }
+    }
+
+    func canMove(from field: Field) -> Bool {
+        guard let owner = piece(at: field) else { return false } // field is not empty
+        guard let target = target(from: field) else { return false } // target field exists
+
+        return piece(at: target) != owner // target not occupied by another of the owner's pieces
+    }
+
+    func movablePieces() -> Set<Field> {
+        pieces(for: player).filter(canMove(from:))
     }
 
     mutating func move(field: Field) throws {
@@ -86,17 +72,6 @@ public struct Game {
     public mutating func roll(_ n: Int) {
         die = n
     }
-
-    // public mutating func move(space: String) throws {
-    //     guard movable.contains(space) else { throw GameError(message: "Invalid move") }
-    //     guard let die else { return }
-
-    //     if die != 6 {
-    //         player = (player + 1) % 4
-    //     }
-
-    //     self.die = nil
-    // }
 }
 
 public struct GameError: Error {

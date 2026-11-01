@@ -37,13 +37,23 @@ extension Game {
                 self.index = (index % Track.length + Track.length) % Track.length
             }
 
-            init?(travelled: Int, from start: Field) {
-                guard travelled < Track.length else { return nil }
-                self.init(wrapping: start.index + travelled)
-            }
-
             func travelled(from start: Field) -> Int {
                 (index - start.index + Track.length) % Track.length
+            }
+
+            func advanced(by steps: Int, for player: Player) -> Game.Field? {
+                let start = Track.startField(for: player)
+                let travelled = travelled(from: start) + steps
+
+                if let _ = Field(index: travelled) {
+                   return .track(Field(wrapping: start.index + travelled))
+                }
+
+                if let target = Home.Field(index: travelled - Track.length) {
+                    return .home(player, target)
+                }
+
+                return nil
             }
         }
     }
@@ -61,9 +71,24 @@ extension Game {
                 self = Field.allCases[index]
             }
 
-            init?(travelled: Int) {
-                self.init(index: travelled - Track.length)
+            func advanced(by steps: Int, for player: Player) -> Game.Field? {
+                guard let target = Field(index: index + steps) else { return nil }
+                return .home(player, target)
             }
+        }
+    }
+}
+
+extension Game.Field {
+
+    func advanced(by steps: Int, for player: Game.Player) -> Game.Field? {
+        switch self {
+        case .track(let field):
+            field.advanced(by: steps, for: player)
+        case .home(let player, let field):
+            field.advanced(by: steps, for: player)
+        case .out:
+            nil
         }
     }
 }
