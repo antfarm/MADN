@@ -2,28 +2,23 @@ import Foundation
 
 public struct Game {
 
-    var engine: GameEngine
-
-    var state: GameEngine.State {
-        get { engine.state }
-        set { engine.state = newValue }
-    }
+    var state: State
 
     public static var allFields: Set<String> {
-        Set(GameEngine.Field.allCases.map(\.description))
+        Set(Field.allCases.map(\.description))
     }
 
     public init(pieces: [Set<String>]? = nil, player: Int = 0) {
-        let player = GameEngine.Player(rawValue: player)!
+        let player = Player(rawValue: player)!
 
         if let pieces {
-            engine = GameEngine(pieces: Dictionary(uniqueKeysWithValues:
-                zip(GameEngine.Player.allCases, pieces).flatMap { player, fields in
-                    fields.map { (GameEngine.Field($0)!, player) }
+            state = State(pieces: Dictionary(uniqueKeysWithValues:
+                zip(Player.allCases, pieces).flatMap { player, fields in
+                    fields.map { (Field($0)!, player) }
                 }
             ), player: player)
         } else {
-            engine = GameEngine(player: player)
+            state = Rules.initialState(player: player)
         }
     }
 
@@ -33,29 +28,29 @@ public struct Game {
 
     public func player(at fieldLabel: String) throws -> Int? {
         let field = try field(for: fieldLabel)
-        return engine.player(at: field)?.rawValue
+        return Rules.player(at: field, in: state)?.rawValue
     }
 
     public func target(from fieldLabel: String) throws -> String? {
         let field = try field(for: fieldLabel)
-        return try engine.target(from: field)?.description
+        return try Rules.target(from: field, in: state)?.description
     }
 
     public func movablePieces() -> Set<String> {
-        Set(engine.movablePieces().map(\.description))
+        Set(Rules.movablePieces(in: state).map(\.description))
     }
 
     public mutating func roll(_ n: Int) {
-        engine.roll(n)
+        state = Rules.roll(n, in: state)
     }
 
     public mutating func move(field fieldLabel: String) throws {
         let field = try field(for: fieldLabel)
-        try engine.move(field: field)
+        state = try Rules.move(field: field, in: state)
     }
 
-    private func field(for fieldLabel: String) throws -> GameEngine.Field {
-        guard let field = GameEngine.Field(fieldLabel) else {
+    private func field(for fieldLabel: String) throws -> Field {
+        guard let field = Field(fieldLabel) else {
             throw GameError(message: "Invalid field")
         }
 
@@ -63,7 +58,7 @@ public struct Game {
     }
 }
 
-extension GameEngine.Field: LosslessStringConvertible {
+extension Game.Field: LosslessStringConvertible {
 
     var description: String {
         switch self {
@@ -81,13 +76,13 @@ extension GameEngine.Field: LosslessStringConvertible {
               let digit = description.first!.wholeNumberValue
         else { return nil }
 
-        if let index = Int(description), let field = GameEngine.Track.Field(index: index) {
+        if let index = Int(description), let field = Game.Track.Field(index: index) {
             self = .track(field)
         }
-        else if let field = GameEngine.Home.Field(rawValue: String(description.last!)), let player = GameEngine.Player(rawValue: digit) {
+        else if let field = Game.Home.Field(rawValue: String(description.last!)), let player = Game.Player(rawValue: digit) {
             self = .home(player, field)
         }
-        else if let field = GameEngine.Out.Field(rawValue: String(description.last!)), let player = GameEngine.Player(rawValue: digit) {
+        else if let field = Game.Out.Field(rawValue: String(description.last!)), let player = Game.Player(rawValue: digit) {
             self = .out(player, field)
         }
         else {

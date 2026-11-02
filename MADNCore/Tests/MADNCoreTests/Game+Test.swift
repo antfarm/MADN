@@ -2,9 +2,9 @@
 
 extension Game {
 
-    func adding(_ pieces: [String: GameEngine.Player]) -> Game {
+    func adding(_ pieces: [String: Player]) -> Game {
         var game = self
-        game.state.pieces.merge(pieces.map { (GameEngine.Field($0.key)!, $0.value) }) { _, new in new }
+        game.state.pieces.merge(pieces.map { (Field($0.key)!, $0.value) }) { _, new in new }
         return game
     }
 

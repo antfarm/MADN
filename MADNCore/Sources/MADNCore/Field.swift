@@ -1,4 +1,4 @@
-extension GameEngine {
+extension Game {
 
     enum Field: Hashable, CaseIterable {
         case track(Track.Field)
@@ -52,7 +52,7 @@ extension GameEngine {
                 (index - start.index + Track.length) % Track.length
             }
 
-            func advanced(by steps: Int, for player: Player) -> GameEngine.Field? {
+            func advanced(by steps: Int, for player: Player) -> Game.Field? {
                 let start = Track.startField(for: player)
                 let travelled = travelled(from: start) + steps
 
@@ -82,7 +82,7 @@ extension GameEngine {
                 self = Field.allCases[index]
             }
 
-            func advanced(by steps: Int, for player: Player) -> GameEngine.Field? {
+            func advanced(by steps: Int, for player: Player) -> Game.Field? {
                 guard let target = Field(index: index + steps) else { return nil }
                 return .home(player, target)
             }
