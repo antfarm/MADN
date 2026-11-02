@@ -42,7 +42,18 @@ struct GameView: View {
     }
 
     var body: some View {
-        Grid {
+        GeometryReader { proxy in
+            let side = min(proxy.size.width, proxy.size.height)
+
+            board
+                .frame(width: 1100, height: 1100)
+                .scaleEffect(side / 1100)
+                .frame(width: proxy.size.width, height: proxy.size.height)
+        }
+    }
+
+    var board: some View {
+        Grid(horizontalSpacing: 0, verticalSpacing: 0) {
             ForEach(Self.boardMap.indices, id: \.self) { row in
                 GridRow {
                     ForEach(Self.boardMap[row].indices, id: \.self) { column in
@@ -53,7 +64,7 @@ struct GameView: View {
                             Color.clear
                         } else {
                             Circle()
-                                .strokeBorder(.primary, lineWidth: 3)
+                                .strokeBorder(.primary, lineWidth: 4)
                                 .background {
                                     Circle().fill(Color(.systemBackground))
                                     Circle().fill(fill ?? .clear)
@@ -65,6 +76,7 @@ struct GameView: View {
                                     [field: center]
                                 }
                                 .scaleEffect(0.95)
+                                .padding(5)
                                 .onTapGesture { game.move(field: field) }
                                 .allowsHitTesting(game.movablePieces.contains(field))
                         }
@@ -78,7 +90,7 @@ struct GameView: View {
                     path.addLines((0..<40).compactMap { centers[String(format: "%02d", $0)].map { proxy[$0] } })
                     path.closeSubpath()
                 }
-                .stroke(.primary, lineWidth: 3)
+                .stroke(.primary, lineWidth: 4)
             }
         }
         .overlayPreferenceValue(CellCenters.self) { centers in
@@ -109,7 +121,6 @@ struct GameView: View {
             }
         }
         .font(.system(.body, design: .monospaced))
-        .aspectRatio(1, contentMode: .fit)
         .scaleEffect(0.9)
     }
 }
@@ -129,7 +140,7 @@ struct Piece: View {
     var body: some View {
         Circle()
             .fill(color)
-            .strokeBorder(isMovable ? .orange : .black, lineWidth: isMovable ? 10 : 3)
+            .strokeBorder(isMovable ? .orange : .black, lineWidth: isMovable ? 14 : 4)
             .scaleEffect(0.75)
     }
 }
@@ -148,9 +159,9 @@ struct Die: View {
     ]
 
     var body: some View {
-        RoundedRectangle(cornerRadius: 8)
+        RoundedRectangle(cornerRadius: 11)
             .fill(Color(red: 1, green: 0.97, blue: 0.86).opacity(0.85))
-            .strokeBorder(.primary, lineWidth: 3)
+            .strokeBorder(.primary, lineWidth: 4)
             .overlay {
                 if let value {
                     let rows = Self.eyes[value]!.split(separator: " ").map(Array.init)
@@ -169,7 +180,7 @@ struct Die: View {
                 } else {
                     Circle()
                         .fill(color)
-                        .strokeBorder(.orange, lineWidth: 10)
+                        .strokeBorder(.orange, lineWidth: 14)
                         .scaleEffect(0.7)
                         .transition(.opacity)
                 }
