@@ -10,34 +10,35 @@ struct GameEngine {
 
     typealias Pieces = [Field: Player]
 
-    var player: Player = .one
+    struct State {
+        static let startPieces: Pieces = Dictionary(uniqueKeysWithValues:
+            Player.allCases.flatMap { player in
+                Out.Field.allCases.map { field in (Field.out(player, field), player) }
+            }
+        )
 
-    var die: Int? = nil
+        var pieces = startPieces
+        var player = Player.one
+        var die: Int? = nil
+    }
 
-    var pieces: Pieces
+    var state: State
 
-    static let startPieces: Pieces = Dictionary(uniqueKeysWithValues:
-        Player.allCases.flatMap { player in
-            Out.Field.allCases.map { field in (Field.out(player, field), player) }
-        }
-    )
-
-    init(pieces: Pieces = startPieces, player: Player = .one) {
-        self.pieces = pieces
-        self.player = player
+    init(pieces: Pieces = State.startPieces, player: Player = .one) {
+        state = State(pieces: pieces, player: player)
     }
 
     func player(at field: Field) -> Player? {
-        pieces[field]
+        state.pieces[field]
     }
 
     func pieces(for player: Player) -> Set<Field> {
-        Set(pieces.filter { $0.value == player }.keys)
+        Set(state.pieces.filter { $0.value == player }.keys)
     }
 
     func target(from field: Field) throws -> Field? {
         guard let owner = player(at: field) else { throw GameError(message: "No piece on field") }
-        guard let die else { throw GameError(message: "Die not rolled") }
+        guard let die = state.die else { throw GameError(message: "Die not rolled") }
 
         return switch field {
         case .out(let player, _):
@@ -55,21 +56,21 @@ struct GameEngine {
     }
 
     func movablePieces() -> Set<Field> {
-        pieces(for: player).filter(canMove(from:))
+        pieces(for: state.player).filter(canMove(from:))
     }
 
     mutating func move(field: Field) throws {
-        guard let die else { return }
+        guard let die = state.die else { return }
 
         if die != 6 {
-            player = player.next
+            state.player = state.player.next
         }
 
-        self.die = nil
+        state.die = nil
     }
 
     mutating func roll(_ n: Int) {
-        die = n
+        state.die = n
     }
 }
 

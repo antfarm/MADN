@@ -4,6 +4,11 @@ public struct Game {
 
     var engine: GameEngine
 
+    var state: GameEngine.State {
+        get { engine.state }
+        set { engine.state = newValue }
+    }
+
     public static var allFields: Set<String> {
         Set(GameEngine.Field.allCases.map(\.description))
     }
@@ -22,9 +27,9 @@ public struct Game {
         }
     }
 
-    public var player: Int { engine.player.rawValue }
+    public var player: Int { state.player.rawValue }
 
-    public var die: Int? { engine.die }
+    public var die: Int? { state.die }
 
     public func player(at fieldLabel: String) throws -> Int? {
         let field = try field(for: fieldLabel)
