@@ -61,7 +61,7 @@ struct GameView: View {
                         let owner = field.first!.wholeNumberValue
                         let fill = field.last == "0" || field.last!.isLetter ? owner.map { colors[$0].opacity(0.4) } : nil
                         let isMovable = game.movablePieces.contains(field)
-                        let piece = game.piece(at: field)
+                        let player = game.player(at: field)
                         if field == ".." {
                             Color.clear
                         } else {
@@ -71,8 +71,8 @@ struct GameView: View {
                                     Circle().fill(Color(.systemBackground))
                                     Circle().fill(fill ?? .clear)
                                 }
-                                .scaleEffect(field.last!.isLetter && piece == nil ? 0.8 : 1)
-                                .overlay { if let piece { Piece(color: colors[piece], isMovable: isMovable) } }
+                                .scaleEffect(field.last!.isLetter && player == nil ? 0.8 : 1)
+                                .overlay { if let player { Piece(color: colors[player], isMovable: isMovable) } }
                                 .overlay { if showIDs { Text(field) } }
                                 .anchorPreference(key: CellCenters.self, value: .center) { center in
                                     [field: center]

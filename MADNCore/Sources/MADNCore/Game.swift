@@ -27,7 +27,7 @@ public struct Game {
         self.player = player
     }
 
-    func piece(at field: Field) -> Player? {
+    func player(at field: Field) -> Player? {
         pieces[field]
     }
 
@@ -36,7 +36,7 @@ public struct Game {
     }
 
     func target(from field: Field) -> Field? {
-        guard let owner = piece(at: field), // field is not empty
+        guard let owner = player(at: field), // field is not empty
               let die                       // die has been rolled
         else { return nil }
 
@@ -49,10 +49,10 @@ public struct Game {
     }
 
     func canMove(from field: Field) -> Bool {
-        guard let owner = piece(at: field) else { return false } // field is not empty
+        guard let owner = player(at: field) else { return false } // field is not empty
         guard let target = target(from: field) else { return false } // target field exists
 
-        return piece(at: target) != owner // target not occupied by another of the owner's pieces
+        return player(at: target) != owner // target not occupied by another of the owner's pieces
     }
 
     func movablePieces() -> Set<Field> {

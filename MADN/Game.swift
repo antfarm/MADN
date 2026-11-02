@@ -21,8 +21,8 @@ final class Game {
 
     var movablePieces: Set<String> { game.movablePieces() }
 
-    func piece(at field: String) -> Int? {
-        game.piece(at: field)
+    func player(at field: String) -> Int? {
+        game.player(at: field)
     }
 
     func roll() {

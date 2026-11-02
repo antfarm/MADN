@@ -12,10 +12,10 @@ extension Game {
         ), player: player)
     }
 
-    public func piece(at field: String) -> Int? {
+    public func player(at field: String) -> Int? {
         guard let field = Field(field) else { return nil }
 
-        return piece(at: field)?.rawValue
+        return player(at: field)?.rawValue
     }
 
     public func movablePieces() -> Set<String> {
