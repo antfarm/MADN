@@ -4,8 +4,8 @@ public struct GameAPI {
 
     var engine: Game
 
-    public static func isValid(fields: Set<String>) -> Bool {
-        fields == Set(Game.Field.allCases.map(\.description))
+    public static var allFields: Set<String> {
+        Set(Game.Field.allCases.map(\.description))
     }
 
     public init(pieces: [Set<String>], player: Int = 0) {

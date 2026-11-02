@@ -38,7 +38,7 @@ struct GameView: View {
         let fields = boardMap.flatMap { $0 }.map { String($0) }.filter { $0 != ".." }
 
         assert(Set(fields).count == fields.count, "Duplicate fields in board map")
-        assert(Game.isValid(fields: Set(fields)), "Board map does not match the game's fields")
+        assert(Set(fields) == Game.allFields, "Board map does not match the game's fields")
     }
 
     var body: some View {

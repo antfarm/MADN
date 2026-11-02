@@ -11,9 +11,7 @@ final class Game {
         ["3A", "3a", "33", "39"],
     ])
 
-    static func isValid(fields: Set<String>) -> Bool {
-        GameAPI.isValid(fields: fields)
-    }
+    static var allFields: Set<String> { GameAPI.allFields }
 
     var player: Int { game.player }
 
