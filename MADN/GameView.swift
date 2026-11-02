@@ -60,6 +60,8 @@ struct GameView: View {
                         let field = String(Self.boardMap[row][column])
                         let owner = field.first!.wholeNumberValue
                         let fill = field.last == "0" || field.last!.isLetter ? owner.map { colors[$0].opacity(0.4) } : nil
+                        let isMovable = game.movablePieces.contains(field)
+                        let piece = game.piece(at: field)
                         if field == ".." {
                             Color.clear
                         } else {
@@ -69,8 +71,8 @@ struct GameView: View {
                                     Circle().fill(Color(.systemBackground))
                                     Circle().fill(fill ?? .clear)
                                 }
-                                .scaleEffect(field.last!.isLetter && game.piece(at: field) == nil ? 0.8 : 1)
-                                .overlay { if let player = game.piece(at: field) { Piece(color: colors[player], isMovable: game.movablePieces.contains(field)) } }
+                                .scaleEffect(field.last!.isLetter && piece == nil ? 0.8 : 1)
+                                .overlay { if let piece { Piece(color: colors[piece], isMovable: isMovable) } }
                                 .overlay { if showIDs { Text(field) } }
                                 .anchorPreference(key: CellCenters.self, value: .center) { center in
                                     [field: center]
@@ -78,7 +80,7 @@ struct GameView: View {
                                 .scaleEffect(0.95)
                                 .padding(5)
                                 .onTapGesture { game.move(field: field) }
-                                .allowsHitTesting(game.movablePieces.contains(field))
+                                .allowsHitTesting(isMovable)
                         }
                     }
                 }
