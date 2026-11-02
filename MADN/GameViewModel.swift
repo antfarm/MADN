@@ -65,7 +65,7 @@ final class GameViewModel {
     var die: Int? { game.die }
 
     func player(at field: String) -> Int? {
-        game.player(at: field)
+        try! game.player(at: field)
     }
 
     var movablePieces: Set<String> { game.movablePieces() }

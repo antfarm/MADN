@@ -8,22 +8,32 @@ public struct Game {
         Set(GameEngine.Field.allCases.map(\.description))
     }
 
-    public init(pieces: [Set<String>], player: Int = 0) {
-        engine = GameEngine(pieces: Dictionary(uniqueKeysWithValues:
-            zip(GameEngine.Player.allCases, pieces).flatMap { player, fields in
-                fields.map { (GameEngine.Field($0)!, player) }
-            }
-        ), player: GameEngine.Player(rawValue: player)!)
+    public init(pieces: [Set<String>]? = nil, player: Int = 0) {
+        let player = GameEngine.Player(rawValue: player)!
+
+        if let pieces {
+            engine = GameEngine(pieces: Dictionary(uniqueKeysWithValues:
+                zip(GameEngine.Player.allCases, pieces).flatMap { player, fields in
+                    fields.map { (GameEngine.Field($0)!, player) }
+                }
+            ), player: player)
+        } else {
+            engine = GameEngine(player: player)
+        }
     }
 
     public var player: Int { engine.player.rawValue }
 
     public var die: Int? { engine.die }
 
-    public func player(at field: String) -> Int? {
-        guard let field = GameEngine.Field(field) else { return nil }
-
+    public func player(at fieldLabel: String) throws -> Int? {
+        let field = try field(for: fieldLabel)
         return engine.player(at: field)?.rawValue
+    }
+
+    public func target(from fieldLabel: String) throws -> String? {
+        let field = try field(for: fieldLabel)
+        return try engine.target(from: field)?.description
     }
 
     public func movablePieces() -> Set<String> {
@@ -34,10 +44,17 @@ public struct Game {
         engine.roll(n)
     }
 
-    public mutating func move(field: String) throws {
-        guard let field = GameEngine.Field(field) else { throw GameError(message: "Invalid field") }
-
+    public mutating func move(field fieldLabel: String) throws {
+        let field = try field(for: fieldLabel)
         try engine.move(field: field)
+    }
+
+    private func field(for fieldLabel: String) throws -> GameEngine.Field {
+        guard let field = GameEngine.Field(fieldLabel) else {
+            throw GameError(message: "Invalid field")
+        }
+
+        return field
     }
 }
 

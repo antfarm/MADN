@@ -35,22 +35,21 @@ struct GameEngine {
         Set(pieces.filter { $0.value == player }.keys)
     }
 
-    func target(from field: Field) -> Field? {
-        guard let owner = player(at: field), // field is not empty
-              let die                       // die has been rolled
-        else { return nil }
+    func target(from field: Field) throws -> Field? {
+        guard let owner = player(at: field) else { throw GameError(message: "No piece on field") }
+        guard let die else { throw GameError(message: "Die not rolled") }
 
         return switch field {
         case .out(let player, _):
             die == 6 ? .track(Track.startField(for: player)) : nil // bring in
         default:
-            field.advanced(by: die, for: owner) // ordinary move
+            try field.advanced(by: die, for: owner) // ordinary move
         }
     }
 
     func canMove(from field: Field) -> Bool {
         guard let owner = player(at: field) else { return false } // field is not empty
-        guard let target = target(from: field) else { return false } // target field exists
+        guard let target = try? target(from: field) else { return false } // target field exists
 
         return player(at: target) != owner // target not occupied by another of the owner's pieces
     }
@@ -84,14 +83,14 @@ struct GameEngine {
             + Player.allCases.flatMap { player in Out.Field.allCases.map { .out(player, $0) } }
         }
 
-        func advanced(by steps: Int, for player: Player) -> Field? {
+        func advanced(by steps: Int, for player: Player) throws -> Field? {
             switch self {
             case .track(let field):
                 field.advanced(by: steps, for: player)
             case .home(let player, let field):
                 field.advanced(by: steps, for: player)
             case .out:
-                nil
+                throw GameError(message: "Out field cannot advance")
             }
         }
     }
