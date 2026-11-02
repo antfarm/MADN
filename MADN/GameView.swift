@@ -129,7 +129,7 @@ struct Piece: View {
     var body: some View {
         Circle()
             .fill(color)
-            .overlay { Circle().strokeBorder(isMovable ? .orange : .black, lineWidth: isMovable ? 8 : 3) }
+            .strokeBorder(isMovable ? .orange : .black, lineWidth: isMovable ? 10 : 3)
             .scaleEffect(0.75)
     }
 }
@@ -168,9 +168,9 @@ struct Die: View {
                     .transition(.opacity)
                 } else {
                     Circle()
-                        .scale(0.5)
                         .fill(color)
-                        .stroke(.orange, lineWidth: 5)
+                        .strokeBorder(.orange, lineWidth: 10)
+                        .scaleEffect(0.7)
                         .transition(.opacity)
                 }
             }
