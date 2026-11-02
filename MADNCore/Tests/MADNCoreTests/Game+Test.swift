@@ -1,20 +1,20 @@
 @testable import MADNCore
 
-extension Game {
+extension GameAPI {
 
-    func adding(_ pieces: [String: Player]) -> Game {
+    func adding(_ pieces: [String: Game.Player]) -> GameAPI {
         var game = self
-        game.pieces.merge(pieces.map { (Field($0.key)!, $0.value) }) { _, new in new }
+        game.engine.pieces.merge(pieces.map { (Game.Field($0.key)!, $0.value) }) { _, new in new }
         return game
     }
 
-    func rolled(_ die: Int?) -> Game {
+    func rolled(_ die: Int?) -> GameAPI {
         var game = self
-        game.die = die
+        game.engine.die = die
         return game
     }
 
-    func moved(_ field: String) throws -> Game {
+    func moved(_ field: String) throws -> GameAPI {
         var game = self
         try game.move(field: field)
         return game

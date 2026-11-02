@@ -1,35 +1,43 @@
 import Foundation
 
-extension Game {
+public struct GameAPI {
+
+    var engine: Game
 
     public static func isValid(fields: Set<String>) -> Bool {
-        fields == Set(Field.allCases.map(\.description))
+        fields == Set(Game.Field.allCases.map(\.description))
     }
 
-    public init(pieces: [Set<String>], player: Player = .one) {
-        self.init(pieces: Dictionary(uniqueKeysWithValues:
-            zip(Player.allCases, pieces).flatMap { player, fields in
-                fields.map { (Field($0)!, player) }
+    public init(pieces: [Set<String>], player: Int = 0) {
+        engine = Game(pieces: Dictionary(uniqueKeysWithValues:
+            zip(Game.Player.allCases, pieces).flatMap { player, fields in
+                fields.map { (Game.Field($0)!, player) }
             }
-        ), player: player)
+        ), player: Game.Player(rawValue: player)!)
     }
+
+    public var player: Int { engine.player.rawValue }
+
+    public var die: Int? { engine.die }
 
     public func player(at field: String) -> Int? {
-        guard let field = Field(field) else { return nil }
+        guard let field = Game.Field(field) else { return nil }
 
-        return player(at: field)?.rawValue
+        return engine.player(at: field)?.rawValue
     }
 
     public func movablePieces() -> Set<String> {
-        let movable: Set<Field> = movablePieces()
+        Set(engine.movablePieces().map(\.description))
+    }
 
-        return Set(movable.map(\.description))
+    public mutating func roll(_ n: Int) {
+        engine.roll(n)
     }
 
     public mutating func move(field: String) throws {
-        guard let field = Field(field) else { throw GameError(message: "Invalid field") }
+        guard let field = Game.Field(field) else { throw GameError(message: "Invalid field") }
 
-        try move(field: field)
+        try engine.move(field: field)
     }
 }
 

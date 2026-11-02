@@ -4,7 +4,7 @@ import MADNCore
 @Observable
 final class Game {
 
-    var game = MADNCore.Game(pieces: [
+    var game = GameAPI(pieces: [
         ["0A", "0a", "00", "09"],
         ["1A", "1a", "11", "19"],
         ["2A", "2a", "22", "29"],
@@ -12,10 +12,10 @@ final class Game {
     ])
 
     static func isValid(fields: Set<String>) -> Bool {
-        MADNCore.Game.isValid(fields: fields)
+        GameAPI.isValid(fields: fields)
     }
 
-    var player: Int { game.player.rawValue }
+    var player: Int { game.player }
 
     var die: Int? { game.die }
 

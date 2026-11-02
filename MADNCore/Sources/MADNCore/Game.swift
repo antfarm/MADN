@@ -1,6 +1,6 @@
-public struct Game {
+struct Game {
 
-    public enum Player: Int, CaseIterable, Sendable {
+    enum Player: Int, CaseIterable {
         case one, two, three, four
 
         var next: Player {
@@ -10,9 +10,9 @@ public struct Game {
 
     typealias Pieces = [Field: Player]
 
-    public var player: Player = .one
+    var player: Player = .one
 
-    public var die: Int? = nil
+    var die: Int? = nil
 
     var pieces: Pieces
 
@@ -69,7 +69,7 @@ public struct Game {
         self.die = nil
     }
 
-    public mutating func roll(_ n: Int) {
+    mutating func roll(_ n: Int) {
         die = n
     }
 
