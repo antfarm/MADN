@@ -55,12 +55,13 @@ extension Game {
             guard let owner = player(at: field, in: state) else { throw GameError(message: "No piece on field") }
             guard let die = state.die else { throw GameError(message: "Die not rolled") }
 
-            return switch field {
-            case .out(let player, _):
-                die == 6 ? .track(Track.startField(for: player)) : nil // bring in
-            default:
-                try field.advanced(by: die, for: owner) // ordinary move
+            if case .out = field {
+                return die == 6 ? owner.field(stepsTravelled: 0) : nil // bring in
             }
+
+            let steps = try owner.stepsTravelled(to: field)
+
+            return owner.field(stepsTravelled: steps + die) // ordinary move
         }
 
         static func canMove(from field: Field, in state: State) -> Bool {

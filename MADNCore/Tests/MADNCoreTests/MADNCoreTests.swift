@@ -22,3 +22,14 @@ struct OutField {
         #expect(!game.movablePieces().contains("0A"))
     }
 }
+
+@Suite("A piece on a track field")
+struct TrackField {
+
+    @Test("enters its own home row after its last track field")
+    func entersHomeRow() throws {
+        let game = try Game(pieces: [[], [], ["18"], []]).rolled(3)
+
+        #expect(try game.target(from: "18") == "2b")
+    }
+}

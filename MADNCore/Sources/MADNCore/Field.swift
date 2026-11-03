@@ -10,17 +10,6 @@ extension Game {
             + Player.allCases.flatMap { player in Home.Field.allCases.map { .home(player, $0) } }
             + Player.allCases.flatMap { player in Out.Field.allCases.map { .out(player, $0) } }
         }
-
-        func advanced(by steps: Int, for player: Player) throws -> Field? {
-            switch self {
-            case .track(let field):
-                field.advanced(by: steps, for: player)
-            case .home(let player, let field):
-                field.advanced(by: steps, for: player)
-            case .out:
-                throw GameError(message: "Out field cannot advance")
-            }
-        }
     }
 
     enum Out {
@@ -47,45 +36,12 @@ extension Game {
             init(wrapping index: Int) {
                 self.index = (index % Track.length + Track.length) % Track.length
             }
-
-            func travelled(from start: Field) -> Int {
-                (index - start.index + Track.length) % Track.length
-            }
-
-            func advanced(by steps: Int, for player: Player) -> Game.Field? {
-                let start = Track.startField(for: player)
-                let travelled = travelled(from: start) + steps
-
-                if let _ = Field(index: travelled) {
-                   return .track(Field(wrapping: start.index + travelled))
-                }
-
-                if let target = Home.Field(index: travelled - Track.length) {
-                    return .home(player, target)
-                }
-
-                return nil
-            }
         }
     }
 
     enum Home {
         enum Field: String, CaseIterable {
             case a, b, c, d
-
-            var index: Int {
-                Field.allCases.firstIndex(of: self)!
-            }
-
-            init?(index: Int) {
-                guard Field.allCases.indices.contains(index) else { return nil }
-                self = Field.allCases[index]
-            }
-
-            func advanced(by steps: Int, for player: Player) -> Game.Field? {
-                guard let target = Field(index: index + steps) else { return nil }
-                return .home(player, target)
-            }
         }
     }
 }
