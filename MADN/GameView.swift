@@ -4,12 +4,10 @@ private let highlightColor = Color.orange
 
 struct GameView: View {
 
-    @State var game = GameViewModel()
-
-    var showFieldLabels = false
+    @State private var game = GameViewModel()
 
     var body: some View {
-        Board(game: game, showFieldLabels: showFieldLabels)
+        Board(game: game)
     }
 }
 
@@ -18,8 +16,6 @@ struct Board: View {
     private static let cellSize: CGFloat = 100
 
     let game: GameViewModel
-
-    let showFieldLabels: Bool
 
     var body: some View {
         GeometryReader { proxy in
@@ -42,12 +38,10 @@ struct Board: View {
                             let player = game.player(at: field)
 
                             Field(
-                                label: field,
                                 color: game.color(for: game.fieldOwner(of: field)),
                                 pieceColor: game.color(for: player),
                                 isHighlighted: hasMovablePiece,
                                 isSmall: !game.isTrackField(field) && player == nil,
-                                showLabel: showFieldLabels,
                                 onTap: { game.move(field: field) }
                             )
                         } else {
@@ -92,12 +86,10 @@ struct TrackLine: View {
 }
 
 struct Field: View {
-    let label: String
     let color: Color?
     let pieceColor: Color?
     let isHighlighted: Bool
     let isSmall: Bool
-    let showLabel: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -110,7 +102,6 @@ struct Field: View {
                 }
                 .scaleEffect(isSmall ? 0.8 : 1)
                 .overlay { if let pieceColor { Piece(color: pieceColor, isHighlighted: isHighlighted) } }
-                .overlay { if showLabel { Text(label).font(.system(size: 30, design: .monospaced)) } }
         }
         .buttonStyle(UnstyledButtonStyle())
         .disabled(!isHighlighted)
