@@ -23,7 +23,7 @@ struct Board: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let boardSize = CGFloat(GameViewModel.cellsPerSide) * Self.cellSize
+            let boardSize = CGFloat(game.cellsPerSide) * Self.cellSize
 
             grid
                 .frame(width: boardSize, height: boardSize)
@@ -34,9 +34,9 @@ struct Board: View {
 
     private var grid: some View {
         Grid(horizontalSpacing: 0, verticalSpacing: 0) {
-            ForEach(0..<GameViewModel.cellsPerSide, id: \.self) { row in
+            ForEach(0..<game.cellsPerSide, id: \.self) { row in
                 GridRow {
-                    ForEach(0..<GameViewModel.cellsPerSide, id: \.self) { column in
+                    ForEach(0..<game.cellsPerSide, id: \.self) { column in
                         if let field = game.field(row: row, column: column) {
                             let hasMovablePiece = game.movablePieces.contains(field)
                             let player = game.player(at: field)
@@ -58,7 +58,7 @@ struct Board: View {
             }
         }
         .background {
-            let fieldCenters = game.trackCells().map {
+            let fieldCenters = game.trackCells.map {
                 CGPoint(x: (CGFloat($0.column) + 0.5) * Self.cellSize,
                         y: (CGFloat($0.row) + 0.5) * Self.cellSize)
             }

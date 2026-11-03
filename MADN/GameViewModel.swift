@@ -22,7 +22,7 @@ final class GameViewModel {
         .split(separator: "\n")
         .map { $0.split(separator: " ") }
 
-    static let cellsPerSide = boardMap.count
+    var cellsPerSide: Int { Self.boardMap.count }
 
     private static let playerColors = [Color.yellow, .blue, .red, .green]
 
@@ -82,11 +82,28 @@ final class GameViewModel {
 
     // board layout
 
+    var trackCells: [(row: Int, column: Int)] { Self.trackCells }
+
+    private static let trackCells: [(row: Int, column: Int)] = {
+        func cell(of field: String) -> (row: Int, column: Int)? {
+            for (row, columns) in boardMap.enumerated() {
+                if let column = columns.firstIndex(of: Substring(field)) { return (row, column) }
+            }
+            return nil
+        }
+
+        return (0..<40)
+            .map { String(format: "%02d", $0) } // TODO: ask the model
+            .compactMap(cell(of:))
+    }()
+
     func field(row: Int, column: Int) -> String? {
         let field = String(Self.boardMap[row][column])
 
         return field == ".." ? nil : field
     }
+
+    // board topology
 
     func isTrackField(_ field: String) -> Bool {
         field.last!.isNumber
@@ -96,18 +113,5 @@ final class GameViewModel {
         guard !isTrackField(field) || field.last == "0" else { return nil }
 
         return field.first!.wholeNumberValue
-    }
-
-    func trackFields() -> [String] {
-        (0..<40).map { String(format: "%02d", $0) } // TODO: ask the model
-    }
-
-    func trackCells() -> [(row: Int, column: Int)] {
-        trackFields().compactMap { field in
-            for (row, columns) in Self.boardMap.enumerated() {
-                if let column = columns.firstIndex(of: Substring(field)) { return (row, column) }
-            }
-            return nil
-        }
     }
 }
