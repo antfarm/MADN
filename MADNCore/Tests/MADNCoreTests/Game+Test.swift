@@ -8,9 +8,9 @@ extension Game {
         return game
     }
 
-    func rolled(_ die: Int?) -> Game {
+    func rolled(_ die: Int) -> Game {
         var game = self
-        game.state.die = die
+        game.roll(die)
         return game
     }
 
