@@ -6,6 +6,29 @@ extension Game {
         var pieces: Pieces
         var player: Player
         var die: Int? = nil
+
+        init(pieces: Pieces, player: Player, die: Int? = nil) throws {
+            for (field, piecePlayer) in pieces {
+                switch field {
+                case .home(let owner, _), .out(let owner, _):
+                    guard owner == piecePlayer else {
+                        throw GameError(message: "Player \(piecePlayer.rawValue) cannot be on \(field)")
+                    }
+                case .track:
+                    break
+                }
+            }
+
+            for seat in Player.allCases {
+                guard pieces.values.filter({ $0 == seat }).count <= Out.Field.allCases.count else {
+                    throw GameError(message: "Player \(seat.rawValue) has too many pieces")
+                }
+            }
+
+            self.pieces = pieces
+            self.player = player
+            self.die = die
+        }
     }
 
     enum Rules {
@@ -17,7 +40,7 @@ extension Game {
         )
 
         static func initialState(player: Player = .one) -> State {
-            State(pieces: startPieces, player: player)
+            try! State(pieces: startPieces, player: player)
         }
 
         static func player(at field: Field, in state: State) -> Player? {

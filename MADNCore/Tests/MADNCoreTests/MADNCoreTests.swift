@@ -4,7 +4,7 @@ import Testing
 @Suite("A piece on an out field")
 struct OutField {
 
-    let game = Game(pieces: [["0A"], [], [], []])
+    let game = try! Game(pieces: [["0A"], [], [], []])
 
     @Test("can only move with a 6", arguments: 1...6)
     func onlyWithSix(die: Int) {

@@ -49,7 +49,7 @@ final class GameViewModel {
         ["3A", "3a", "33", "39"],
     ]
 
-    var game = Game(pieces: initialPieces)
+    var game = try! Game(pieces: initialPieces)
 
     init() {
         let fields = Self.boardMap.flatMap { $0 }.map { String($0) }.filter { $0 != ".." }

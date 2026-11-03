@@ -8,18 +8,29 @@ public struct Game {
         Set(Field.allCases.map(\.description))
     }
 
-    public init(pieces: [Set<String>]? = nil, player: Int = 0) {
-        let player = Player(rawValue: player)!
-
-        if let pieces {
-            state = State(pieces: Dictionary(uniqueKeysWithValues:
-                zip(Player.allCases, pieces).flatMap { player, fields in
-                    fields.map { (Field($0)!, player) }
-                }
-            ), player: player)
-        } else {
-            state = Rules.initialState(player: player)
+    public init(pieces: [Set<String>]? = nil, player: Int = 0) throws {
+        guard let player = Player(rawValue: player) else {
+            throw GameError(message: "Invalid player")
         }
+
+        guard let pieces else {
+            state = Rules.initialState(player: player)
+            return
+        }
+
+        guard pieces.count == Player.allCases.count else {
+            throw GameError(message: "Invalid number of players")
+        }
+
+        let list = try zip(Player.allCases, pieces).flatMap { player, fieldLabels in
+            try fieldLabels.map { (try Self.field(for: $0), player) }
+        }
+
+        guard Set(list.map(\.0)).count == list.count else {
+            throw GameError(message: "Two pieces on one field")
+        }
+
+        state = try State(pieces: Dictionary(uniqueKeysWithValues: list), player: player)
     }
 
     public var player: Int { state.player.rawValue }
@@ -27,12 +38,12 @@ public struct Game {
     public var die: Int? { state.die }
 
     public func player(at fieldLabel: String) throws -> Int? {
-        let field = try field(for: fieldLabel)
+        let field = try Self.field(for: fieldLabel)
         return Rules.player(at: field, in: state)?.rawValue
     }
 
     public func target(from fieldLabel: String) throws -> String? {
-        let field = try field(for: fieldLabel)
+        let field = try Self.field(for: fieldLabel)
         return try Rules.target(from: field, in: state)?.description
     }
 
@@ -45,11 +56,11 @@ public struct Game {
     }
 
     public mutating func move(field fieldLabel: String) throws {
-        let field = try field(for: fieldLabel)
+        let field = try Self.field(for: fieldLabel)
         state = try Rules.move(field: field, in: state)
     }
 
-    private func field(for fieldLabel: String) throws -> Field {
+    private static func field(for fieldLabel: String) throws -> Field {
         guard let field = Field(fieldLabel) else {
             throw GameError(message: "Invalid field")
         }
