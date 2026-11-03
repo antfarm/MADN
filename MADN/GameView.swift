@@ -71,7 +71,7 @@ struct Board: View {
                 color: game.color(for: game.player),
                 onRoll: { game.roll() }
             )
-            .rotationEffect(.degrees(Double(game.player) * 90))
+            .rotationEffect(game.rotation(for: game.player))
             .frame(width: Self.cellSize, height: Self.cellSize)
             .padding(2.25 * Self.cellSize)
         }

@@ -36,7 +36,11 @@ final class GameViewModel {
         return Self.playerColors[player]
     }
 
-    private static let playerCorners: [Alignment] = [.bottomLeading, .topLeading, .topTrailing, .bottomTrailing]
+    func rotation(for player: Int) -> Angle {
+        .degrees(Double(player) * 90)
+    }
+
+        private static let playerCorners: [Alignment] = [.bottomLeading, .topLeading, .topTrailing, .bottomTrailing]
 
     func corner(for player: Int) -> Alignment {
         Self.playerCorners[player]
