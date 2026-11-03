@@ -1,10 +1,17 @@
 @testable import MADNCore
 
+extension Game.Field: ExpressibleByStringLiteral {
+
+    public init(stringLiteral value: String) {
+        self = Game.Field(value)!
+    }
+}
+
 extension Game {
 
-    func adding(_ pieces: [String: Player]) -> Game {
+    func adding(_ pieces: [Field: Player]) -> Game {
         var game = self
-        game.state.pieces.merge(pieces.map { (Field($0.key)!, $0.value) }) { _, new in new }
+        game.state.pieces.merge(pieces) { _, new in new }
         return game
     }
 
@@ -14,7 +21,7 @@ extension Game {
         return game
     }
 
-    func moved(_ field: String) throws -> Game {
+    func moved(_ field: Field) throws -> Game {
         var game = self
         try game.move(field: field)
         return game

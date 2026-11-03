@@ -6,7 +6,7 @@ final class GameViewModel {
 
     // definition/construction
 
-    private static let boardMap = """
+    private static let boardMap: [[Game.Field?]] = """
         1A 1B .. .. 18 19 20 .. .. 2B 2A
         1C 1D .. .. 17 2a 21 .. .. 2D 2C
         .. .. .. .. 16 2b 22 .. .. .. ..
@@ -20,59 +20,63 @@ final class GameViewModel {
         0A 0B .. .. 00 39 38 .. .. 3B 3A
         """
         .split(separator: "\n")
-        .map { $0.split(separator: " ") }
+        .map { $0.split(separator: " ").map { Game.Field(String($0)) } }
 
     var cellsPerSide: Int { Self.boardMap.count }
 
     private static let playerColors = [Color.yellow, .blue, .red, .green]
 
-    func color(for player: Int) -> Color {
-        Self.playerColors[player]
+    func color(for player: Game.Player) -> Color {
+        Self.playerColors[player.rawValue]
     }
 
-    func color(for player: Int?) -> Color? {
+    func color(for player: Game.Player?) -> Color? {
         guard let player else { return nil }
 
-        return Self.playerColors[player]
+        return Self.playerColors[player.rawValue]
     }
 
-    func rotation(for player: Int) -> Angle {
-        .degrees(Double(player) * 90)
+    private static let playerCorners: [Alignment] = [.bottomLeading, .topLeading, .topTrailing, .bottomTrailing]
+
+    func corner(for player: Game.Player) -> Alignment {
+        Self.playerCorners[player.rawValue]
     }
 
-        private static let playerCorners: [Alignment] = [.bottomLeading, .topLeading, .topTrailing, .bottomTrailing]
-
-    func corner(for player: Int) -> Alignment {
-        Self.playerCorners[player]
+    func rotation(for player: Game.Player) -> Angle {
+        .degrees(Double(player.rawValue) * 90)
     }
 
-    private static let initialPieces: [Set<String>] = [
-        ["0A", "0a", "00", "09"],
-        ["1A", "1a", "11", "19"],
-        ["2A", "2a", "22", "29"],
-        ["3A", "3a", "33", "39"],
-    ]
+    private static let initialPieces: [Game.Field: Game.Player] = Dictionary(uniqueKeysWithValues:
+        zip(Game.Player.allCases, [
+            ["0A", "0a", "00", "09"],
+            ["1A", "1a", "11", "19"],
+            ["2A", "2a", "22", "29"],
+            ["3A", "3a", "33", "39"],
+        ]).flatMap { player, labels in
+            labels.map { (Game.Field($0)!, player) }
+        }
+    )
 
     private var game = try! Game(pieces: initialPieces)
 
     init() {
-        let fields = Self.boardMap.flatMap { $0 }.map { String($0) }.filter { $0 != ".." }
+        let fields = Self.boardMap.flatMap { $0 }.compactMap { $0 }
 
         assert(Set(fields).count == fields.count, "Duplicate fields in board map")
-        assert(Set(fields) == Game.allFields, "Board map does not match the game's fields")
+        assert(Set(fields) == Set(Game.Field.allCases), "Board map does not match the game's fields")
     }
 
     // state
 
-    var player: Int { game.player }
+    var player: Game.Player { game.player }
 
     var die: Int? { game.die }
 
-    func player(at field: String) -> Int? {
-        try! game.player(at: field)
+    func player(at field: Game.Field) -> Game.Player? {
+        game.player(at: field)
     }
 
-    var movablePieces: Set<String> { game.movablePieces() }
+    var movablePieces: Set<Game.Field> { game.movablePieces() }
 
     // actions
 
@@ -80,7 +84,7 @@ final class GameViewModel {
         game.roll(.random(in: 1...6))
     }
 
-    func move(field: String) {
+    func move(field: Game.Field) {
         do { try game.move(field: field) } catch { print(error) }
     }
 
@@ -89,33 +93,27 @@ final class GameViewModel {
     var trackCells: [(row: Int, column: Int)] { Self.trackCells }
 
     private static let trackCells: [(row: Int, column: Int)] = {
-        func cell(of field: String) -> (row: Int, column: Int)? {
+        func cell(of field: Game.Field) -> (row: Int, column: Int)? {
             for (row, columns) in boardMap.enumerated() {
-                if let column = columns.firstIndex(of: Substring(field)) { return (row, column) }
+                if let column = columns.firstIndex(of: field) { return (row, column) }
             }
             return nil
         }
 
-        return (0..<40)
-            .map { String(format: "%02d", $0) } // TODO: ask the model
-            .compactMap(cell(of:))
+        return Game.Field.trackFields.compactMap(cell(of:))
     }()
 
-    func field(row: Int, column: Int) -> String? {
-        let field = String(Self.boardMap[row][column])
-
-        return field == ".." ? nil : field
+    func field(row: Int, column: Int) -> Game.Field? {
+        Self.boardMap[row][column]
     }
 
     // board topology
 
-    func isTrackField(_ field: String) -> Bool {
-        field.last!.isNumber
+    func isTrackField(_ field: Game.Field) -> Bool {
+        field.isTrack
     }
 
-    func fieldOwner(of field: String) -> Int? {
-        guard !isTrackField(field) || field.last == "0" else { return nil }
-
-        return field.first!.wholeNumberValue
+    func fieldOwner(of field: Game.Field) -> Game.Player? {
+        field.owner
     }
 }

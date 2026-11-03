@@ -1,6 +1,6 @@
 extension Game {
 
-    enum Player: Int, CaseIterable {
+    public enum Player: Int, CaseIterable, Sendable {
         case one, two, three, four
 
         var next: Player {
