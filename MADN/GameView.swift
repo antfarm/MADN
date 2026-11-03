@@ -15,7 +15,7 @@ struct GameView: View {
 
 struct Board: View {
 
-    static let cellSize: CGFloat = 100
+    private static let cellSize: CGFloat = 100
 
     let game: GameViewModel
 
@@ -32,7 +32,7 @@ struct Board: View {
         }
     }
 
-    var grid: some View {
+    private var grid: some View {
         Grid(horizontalSpacing: 0, verticalSpacing: 0) {
             ForEach(0..<GameViewModel.cellsPerSide, id: \.self) { row in
                 GridRow {
@@ -156,7 +156,7 @@ struct Die: View {
         .rotationEffect(.degrees(rotation))
     }
 
-    var face: some View {
+    private var face: some View {
         RoundedRectangle(cornerRadius: 11)
             .fill(Color(red: 1, green: 0.97, blue: 0.86).opacity(0.85))
             .strokeBorder(.primary, lineWidth: 4)
@@ -174,8 +174,8 @@ struct Die: View {
             }
     }
 
-    struct Eyes: View {
-        static let patterns = [
+    private struct Eyes: View {
+        private static let patterns = [
             1: "... .X. ...",
             2: "X.. ... ..X",
             3: "X.. .X. ..X",

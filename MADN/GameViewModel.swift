@@ -42,14 +42,14 @@ final class GameViewModel {
         Self.playerCorners[player]
     }
 
-    static let initialPieces: [Set<String>] = [
+    private static let initialPieces: [Set<String>] = [
         ["0A", "0a", "00", "09"],
         ["1A", "1a", "11", "19"],
         ["2A", "2a", "22", "29"],
         ["3A", "3a", "33", "39"],
     ]
 
-    var game = try! Game(pieces: initialPieces)
+    private var game = try! Game(pieces: initialPieces)
 
     init() {
         let fields = Self.boardMap.flatMap { $0 }.map { String($0) }.filter { $0 != ".." }
