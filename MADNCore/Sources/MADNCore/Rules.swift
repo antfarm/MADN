@@ -33,14 +33,14 @@ extension Game {
 
     enum Rules {
 
-        static let startPieces: Pieces = Dictionary(uniqueKeysWithValues:
-            Player.allCases.flatMap { player in
-                Out.Field.allCases.map { field in (Field.out(player, field), player) }
-            }
-        )
-
         static func initialState(player: Player = .one) -> State {
-            try! State(pieces: startPieces, player: player)
+            let pieces = Dictionary(uniqueKeysWithValues:
+                Player.allCases.flatMap { player in
+                    Out.Field.allCases.map { field in (Field.out(player, field), player) }
+                }
+            )
+
+            return try! State(pieces: pieces, player: player)
         }
 
         static func player(at field: Field, in state: State) -> Player? {
