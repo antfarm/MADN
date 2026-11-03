@@ -1,13 +1,21 @@
 extension Game {
 
+    public enum DieValue: Int, CaseIterable, Sendable {
+        case one = 1, two, three, four, five, six
+
+        public static func random() -> DieValue {
+            allCases.randomElement()!
+        }
+    }
+
     typealias Pieces = [Field: Player]
 
     struct State {
         var pieces: Pieces
         var player: Player
-        var die: Int? = nil
+        var die: DieValue? = nil
 
-        init(pieces: Pieces, player: Player, die: Int? = nil) throws {
+        init(pieces: Pieces, player: Player, die: DieValue? = nil) throws {
             for (field, piecePlayer) in pieces {
                 switch field {
                 case .home(let owner, _), .out(let owner, _):
@@ -56,12 +64,12 @@ extension Game {
             guard let die = state.die else { throw GameError(message: "Die not rolled") }
 
             if case .out = field {
-                return die == 6 ? owner.field(stepsTravelled: 0) : nil // bring in
+                return die == .six ? owner.field(stepsTravelled: 0) : nil // bring in
             }
 
             let steps = try owner.stepsTravelled(to: field)
 
-            return owner.field(stepsTravelled: steps + die) // ordinary move
+            return owner.field(stepsTravelled: steps + die.rawValue) // ordinary move
         }
 
         static func canMove(from field: Field, in state: State) -> Bool {
@@ -75,9 +83,9 @@ extension Game {
             pieces(for: state.player, in: state).filter { canMove(from: $0, in: state) }
         }
 
-        static func roll(_ n: Int, in state: State) -> State {
+        static func roll(_ die: DieValue, in state: State) -> State {
             var next = state
-            next.die = n
+            next.die = die
             return next
         }
 
@@ -86,7 +94,7 @@ extension Game {
 
             var next = state
 
-            if die != 6 {
+            if die != .six {
                 next.player = state.player.next
             }
 

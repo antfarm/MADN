@@ -15,7 +15,7 @@ public struct Game {
 
     public var player: Player { state.player }
 
-    public var die: Int? { state.die }
+    public var die: DieValue? { state.die }
 
     public func player(at field: Field) -> Player? {
         Rules.player(at: field, in: state)
@@ -29,8 +29,8 @@ public struct Game {
         Rules.movablePieces(in: state)
     }
 
-    public mutating func roll(_ n: Int) {
-        state = Rules.roll(n, in: state)
+    public mutating func roll(_ die: DieValue = .random()) {
+        state = Rules.roll(die, in: state)
     }
 
     public mutating func move(field: Field) throws {

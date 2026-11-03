@@ -15,7 +15,7 @@ extension Game {
         return game
     }
 
-    func rolled(_ die: Int) -> Game {
+    func rolled(_ die: DieValue) -> Game {
         var game = self
         game.roll(die)
         return game

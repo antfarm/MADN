@@ -70,7 +70,7 @@ final class GameViewModel {
 
     var player: Game.Player { game.player }
 
-    var die: Int? { game.die }
+    var die: Int? { game.die?.rawValue }
 
     func player(at field: Game.Field) -> Game.Player? {
         game.player(at: field)
@@ -81,7 +81,7 @@ final class GameViewModel {
     // actions
 
     func roll() {
-        game.roll(.random(in: 1...6))
+        game.roll()
     }
 
     func move(field: Game.Field) {
