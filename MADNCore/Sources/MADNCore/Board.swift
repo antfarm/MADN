@@ -43,6 +43,15 @@ extension Game {
 
             pieces[field] = player
         }
+
+        mutating func move(from field: Field, to target: Field) throws {
+            guard let player = pieces[field] else {
+                throw GameError(message: "No piece on \(field)")
+            }
+
+            pieces[field] = nil
+            try add(pieceFor: player, at: target)
+        }
     }
 
     public enum Field: Hashable, CaseIterable, Sendable {

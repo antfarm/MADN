@@ -26,6 +26,15 @@ struct OutField {
 @Suite("A piece on a track field")
 struct TrackField {
 
+    @Test("moves to its target field")
+    func movesToTarget() throws {
+        let state = try Game.State(pieces: ["05": .one], player: .one, die: .three)
+        let next = try Game.Rules.move(field: "05", in: state)
+
+        #expect(next.board.player(at: "05") == nil)
+        #expect(next.board.player(at: "08") == .one)
+    }
+
     @Test("continues from the last sector into the first")
     func crossesSectors() throws {
         let game = try Game(pieces: ["38": .two]).rolled(.three)

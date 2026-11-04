@@ -37,6 +37,10 @@ extension Game {
 
             var next = state
 
+            if let target = try target(from: field, in: state) {
+                try next.board.move(from: field, to: target)
+            }
+
             if die != .six {
                 next.player = state.player.next
             }
