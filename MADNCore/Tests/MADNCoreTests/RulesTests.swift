@@ -1,6 +1,19 @@
 import Testing
 @testable import MADNCore
 
+@Suite("The turn")
+struct Turn {
+
+    @Test("a 6 lets the player roll again, anything else passes the turn", arguments: Game.DieValue.allCases)
+    func turnOrder(die: Game.DieValue) throws {
+        let state = try Game.State(pieces: ["05": .one], player: .one, die: die)
+        let next = try Game.Rules.move(field: "05", in: state)
+
+        #expect(next.player == (die == .six ? .one : .two))
+        #expect(next.die == nil)
+    }
+}
+
 @Suite("A piece on an out field")
 struct OutField {
 
