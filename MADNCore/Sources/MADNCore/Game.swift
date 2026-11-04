@@ -1,5 +1,3 @@
-import Foundation
-
 public struct Game {
 
     var state: State
@@ -42,8 +40,8 @@ extension Game.Field: LosslessStringConvertible {
 
     public var description: String {
         switch self {
-        case .track(let field):
-            String(format: "%02d", field.index)
+        case .track(let player, let field):
+            "\(player.rawValue)\(field.index)"
         case .home(let player, let field):
             "\(player.rawValue)\(field.rawValue)"
         case .out(let player, let field):
@@ -53,16 +51,19 @@ extension Game.Field: LosslessStringConvertible {
 
     public init?(_ description: String) {
         guard description.count == 2,
-              let digit = description.first!.wholeNumberValue
+              let digit = description.first!.wholeNumberValue,
+              let player = Game.Player(rawValue: digit)
         else { return nil }
 
-        if let index = Int(description), let field = Game.Track.Field(index: index) {
-            self = .track(field)
+        let position = description.last!
+
+        if let index = position.wholeNumberValue, let field = Game.Track.Field(index: index) {
+            self = .track(player, field)
         }
-        else if let field = Game.Home.Field(rawValue: String(description.last!)), let player = Game.Player(rawValue: digit) {
+        else if let field = Game.Home.Field(rawValue: String(position)) {
             self = .home(player, field)
         }
-        else if let field = Game.Out.Field(rawValue: String(description.last!)), let player = Game.Player(rawValue: digit) {
+        else if let field = Game.Out.Field(rawValue: String(position)) {
             self = .out(player, field)
         }
         else {

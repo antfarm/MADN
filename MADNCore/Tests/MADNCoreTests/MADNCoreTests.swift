@@ -1,5 +1,17 @@
+import Foundation
 import Testing
 @testable import MADNCore
+
+@Suite("The board")
+struct Board {
+
+    @Test("trackFields lists the fields from 00 to 39, in that order")
+    func trackFieldOrder() {
+        let labels = (0...39).map { String(format: "%02d", $0) }
+
+        #expect(Game.Field.trackFields.map(\.description) == labels)
+    }
+}
 
 @Suite("A piece on an out field")
 struct OutField {
@@ -25,6 +37,13 @@ struct OutField {
 
 @Suite("A piece on a track field")
 struct TrackField {
+
+    @Test("continues from the last sector into the first")
+    func crossesSectors() throws {
+        let game = try Game(pieces: ["38": .two]).rolled(.three)
+
+        #expect(try game.target(from: "38") == "01")
+    }
 
     @Test("enters its own home row after its last track field")
     func entersHomeRow() throws {

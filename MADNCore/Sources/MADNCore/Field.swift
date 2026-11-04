@@ -1,7 +1,7 @@
 extension Game {
 
     public enum Field: Hashable, CaseIterable, Sendable {
-        case track(Track.Field)
+        case track(Player, Track.Field)
         case home(Player, Home.Field)
         case out(Player, Out.Field)
 
@@ -12,7 +12,7 @@ extension Game {
         }
 
         public static var trackFields: [Field] {
-            (0..<Track.length).map { .track(Track.Field(wrapping: $0)) }
+            Player.allCases.flatMap { player in Track.Field.allCases.map { .track(player, $0) } }
         }
 
         public var isTrack: Bool {
@@ -23,8 +23,8 @@ extension Game {
             switch self {
             case .home(let player, _), .out(let player, _):
                 player
-            case .track(let field):
-                Player.allCases.first { Track.startField(for: $0) == field }
+            case .track(let sector, _):
+                self == sector.startField ? sector : nil
             }
         }
     }
@@ -36,22 +36,18 @@ extension Game {
     }
 
     public enum Track {
-        static let length = 40
+        static let sectorLength = 10
 
-        static func startField(for player: Player) -> Field {
-            Field(wrapping: player.rawValue * length / Player.allCases.count)
-        }
-
-        public struct Field: Hashable, Sendable {
+        public struct Field: Hashable, CaseIterable, Sendable {
             let index: Int
 
             init?(index: Int) {
-                guard (0..<Track.length).contains(index) else { return nil }
+                guard (0..<Track.sectorLength).contains(index) else { return nil }
                 self.index = index
             }
 
-            init(wrapping index: Int) {
-                self.index = (index % Track.length + Track.length) % Track.length
+            public static var allCases: [Field] {
+                (0..<Track.sectorLength).compactMap(Field.init(index:))
             }
         }
     }

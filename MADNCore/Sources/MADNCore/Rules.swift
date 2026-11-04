@@ -64,7 +64,7 @@ extension Game {
             guard let die = state.die else { throw GameError(message: "Die not rolled") }
 
             if case .out = field {
-                return die == .six ? owner.field(stepsTravelled: 0) : nil // bring in
+                return die == .six ? owner.startField : nil // bring in
             }
 
             let steps = try owner.stepsTravelled(to: field)

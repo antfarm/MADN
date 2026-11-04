@@ -19,15 +19,19 @@ extension Game {
             path.indices.contains(steps) ? path[steps] : nil
         }
 
+        var startField: Field {
+            field(stepsTravelled: 0)! // every path has a step 0
+        }
+
         private var path: [Field] { Self.paths[self]! }
 
         private static let paths: [Player: [Field]] = Dictionary(uniqueKeysWithValues:
             Player.allCases.map { player in
-                let circle = (0..<Track.length).map { Field.track(Track.Field(wrapping: $0)) }
-                let start = Track.startField(for: player).index
+                let players = sequence(first: player) { $0.next }.prefix(Player.allCases.count)
+                let track = players.flatMap { player in Track.Field.allCases.map { Field.track(player, $0) } }
                 let home = Home.Field.allCases.map { Field.home(player, $0) }
 
-                return (player, Array(circle[start...] + circle[..<start]) + home)
+                return (player, track + home)
             }
         )
     }
