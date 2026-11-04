@@ -2,6 +2,25 @@ extension Game {
 
     enum Rules {
 
+        static func validateBoard(_ pieces: Pieces) throws {
+            for (field, piecePlayer) in pieces {
+                switch field {
+                case .home(let owner, _), .out(let owner, _):
+                    guard owner == piecePlayer else {
+                        throw GameError(message: "Player \(piecePlayer.rawValue) cannot be on \(field)")
+                    }
+                case .track:
+                    break
+                }
+            }
+
+            for seat in Player.allCases {
+                guard pieces.values.filter({ $0 == seat }).count <= Out.Field.allCases.count else {
+                    throw GameError(message: "Player \(seat.rawValue) has too many pieces")
+                }
+            }
+        }
+
         static func initialState(player: Player = .one) -> State {
             let pieces = Dictionary(uniqueKeysWithValues:
                 Player.allCases.flatMap { player in

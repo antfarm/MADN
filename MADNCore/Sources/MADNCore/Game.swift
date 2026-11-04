@@ -41,22 +41,7 @@ public struct Game {
         var die: DieValue? = nil
 
         init(pieces: Pieces, player: Player, die: DieValue? = nil) throws {
-            for (field, piecePlayer) in pieces {
-                switch field {
-                case .home(let owner, _), .out(let owner, _):
-                    guard owner == piecePlayer else {
-                        throw GameError(message: "Player \(piecePlayer.rawValue) cannot be on \(field)")
-                    }
-                case .track:
-                    break
-                }
-            }
-
-            for seat in Player.allCases {
-                guard pieces.values.filter({ $0 == seat }).count <= Out.Field.allCases.count else {
-                    throw GameError(message: "Player \(seat.rawValue) has too many pieces")
-                }
-            }
+            try Rules.validateBoard(pieces)
 
             self.pieces = pieces
             self.player = player
