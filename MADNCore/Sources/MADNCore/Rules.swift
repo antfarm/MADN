@@ -2,6 +2,14 @@ extension Game {
 
     enum Rules {
 
+        static var initialBoard: Pieces {
+            Dictionary(uniqueKeysWithValues:
+                Player.allCases.flatMap { player in
+                    Out.Field.allCases.map { field in (Field.out(player, field), player) }
+                }
+            )
+        }
+
         static func validateBoard(_ pieces: Pieces) throws {
             for (field, piecePlayer) in pieces {
                 switch field {
@@ -19,16 +27,6 @@ extension Game {
                     throw GameError(message: "Player \(seat.rawValue) has too many pieces")
                 }
             }
-        }
-
-        static func initialState(player: Player = .one) -> State {
-            let pieces = Dictionary(uniqueKeysWithValues:
-                Player.allCases.flatMap { player in
-                    Out.Field.allCases.map { field in (Field.out(player, field), player) }
-                }
-            )
-
-            return try! State(pieces: pieces, player: player)
         }
 
         static func player(at field: Field, in state: State) -> Player? {

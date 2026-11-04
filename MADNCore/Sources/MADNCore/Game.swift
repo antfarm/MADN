@@ -3,11 +3,6 @@ public struct Game {
     var state: State
 
     public init(pieces: [Field: Player]? = nil, player: Player = .one) throws {
-        guard let pieces else {
-            state = Rules.initialState(player: player)
-            return
-        }
-
         state = try State(pieces: pieces, player: player)
     }
 
@@ -40,7 +35,9 @@ public struct Game {
         var player: Player
         var die: DieValue? = nil
 
-        init(pieces: Pieces, player: Player, die: DieValue? = nil) throws {
+        init(pieces: Pieces?, player: Player, die: DieValue? = nil) throws {
+            let pieces = pieces ?? Rules.initialBoard
+
             try Rules.validateBoard(pieces)
 
             self.pieces = pieces
