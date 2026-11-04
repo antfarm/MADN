@@ -1,44 +1,5 @@
 extension Game {
 
-    public enum DieValue: Int, CaseIterable, Sendable {
-        case one = 1, two, three, four, five, six
-
-        public static func random() -> DieValue {
-            allCases.randomElement()!
-        }
-    }
-
-    typealias Pieces = [Field: Player]
-
-    struct State {
-        var pieces: Pieces
-        var player: Player
-        var die: DieValue? = nil
-
-        init(pieces: Pieces, player: Player, die: DieValue? = nil) throws {
-            for (field, piecePlayer) in pieces {
-                switch field {
-                case .home(let owner, _), .out(let owner, _):
-                    guard owner == piecePlayer else {
-                        throw GameError(message: "Player \(piecePlayer.rawValue) cannot be on \(field)")
-                    }
-                case .track:
-                    break
-                }
-            }
-
-            for seat in Player.allCases {
-                guard pieces.values.filter({ $0 == seat }).count <= Out.Field.allCases.count else {
-                    throw GameError(message: "Player \(seat.rawValue) has too many pieces")
-                }
-            }
-
-            self.pieces = pieces
-            self.player = player
-            self.die = die
-        }
-    }
-
     enum Rules {
 
         static func initialState(player: Player = .one) -> State {
@@ -102,8 +63,4 @@ extension Game {
             return next
         }
     }
-}
-
-public struct GameError: Error {
-    public let message: String
 }

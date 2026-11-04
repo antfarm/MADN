@@ -58,3 +58,70 @@ extension Game {
         }
     }
 }
+
+extension Game.Player {
+
+    func stepsTravelled(to field: Game.Field) throws -> Int {
+        guard let steps = path.firstIndex(of: field) else {
+            throw GameError(message: "Field not on player's path")
+        }
+
+        return steps
+    }
+
+    func field(stepsTravelled steps: Int) -> Game.Field? {
+        path.indices.contains(steps) ? path[steps] : nil
+    }
+
+    var startField: Game.Field {
+        field(stepsTravelled: 0)! // every path has a step 0
+    }
+
+    private var path: [Game.Field] { Self.paths[self]! }
+
+    private static let paths: [Game.Player: [Game.Field]] = Dictionary(uniqueKeysWithValues:
+        Game.Player.allCases.map { player in
+            let players = sequence(first: player) { $0.next }.prefix(Game.Player.allCases.count)
+            let track = players.flatMap { player in Game.Track.Field.allCases.map { Game.Field.track(player, $0) } }
+            let home = Game.Home.Field.allCases.map { Game.Field.home(player, $0) }
+
+            return (player, track + home)
+        }
+    )
+}
+
+extension Game.Field: LosslessStringConvertible {
+
+    public var description: String {
+        switch self {
+        case .track(let player, let field):
+            "\(player.rawValue)\(field.index)"
+        case .home(let player, let field):
+            "\(player.rawValue)\(field.rawValue)"
+        case .out(let player, let field):
+            "\(player.rawValue)\(field.rawValue)"
+        }
+    }
+
+    public init?(_ description: String) {
+        guard description.count == 2,
+              let digit = description.first!.wholeNumberValue,
+              let player = Game.Player(rawValue: digit)
+        else { return nil }
+
+        let position = description.last!
+
+        if let index = position.wholeNumberValue, let field = Game.Track.Field(index: index) {
+            self = .track(player, field)
+        }
+        else if let field = Game.Home.Field(rawValue: String(position)) {
+            self = .home(player, field)
+        }
+        else if let field = Game.Out.Field(rawValue: String(position)) {
+            self = .out(player, field)
+        }
+        else {
+            return nil
+        }
+    }
+}

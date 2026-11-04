@@ -34,40 +34,55 @@ public struct Game {
     public mutating func move(field: Field) throws {
         state = try Rules.move(field: field, in: state)
     }
+
+    struct State {
+        var pieces: Pieces
+        var player: Player
+        var die: DieValue? = nil
+
+        init(pieces: Pieces, player: Player, die: DieValue? = nil) throws {
+            for (field, piecePlayer) in pieces {
+                switch field {
+                case .home(let owner, _), .out(let owner, _):
+                    guard owner == piecePlayer else {
+                        throw GameError(message: "Player \(piecePlayer.rawValue) cannot be on \(field)")
+                    }
+                case .track:
+                    break
+                }
+            }
+
+            for seat in Player.allCases {
+                guard pieces.values.filter({ $0 == seat }).count <= Out.Field.allCases.count else {
+                    throw GameError(message: "Player \(seat.rawValue) has too many pieces")
+                }
+            }
+
+            self.pieces = pieces
+            self.player = player
+            self.die = die
+        }
+    }
+
+    typealias Pieces = [Field: Player]
+
+    public enum Player: Int, CaseIterable, Sendable {
+        case one, two, three, four
+
+        var next: Player {
+            Player.allCases[(rawValue + 1) % Player.allCases.count]
+        }
+    }
+
+    public enum DieValue: Int, CaseIterable, Sendable {
+        case one = 1, two, three, four, five, six
+
+        public static func random() -> DieValue {
+            allCases.randomElement()!
+        }
+    }
 }
 
-extension Game.Field: LosslessStringConvertible {
-
-    public var description: String {
-        switch self {
-        case .track(let player, let field):
-            "\(player.rawValue)\(field.index)"
-        case .home(let player, let field):
-            "\(player.rawValue)\(field.rawValue)"
-        case .out(let player, let field):
-            "\(player.rawValue)\(field.rawValue)"
-        }
-    }
-
-    public init?(_ description: String) {
-        guard description.count == 2,
-              let digit = description.first!.wholeNumberValue,
-              let player = Game.Player(rawValue: digit)
-        else { return nil }
-
-        let position = description.last!
-
-        if let index = position.wholeNumberValue, let field = Game.Track.Field(index: index) {
-            self = .track(player, field)
-        }
-        else if let field = Game.Home.Field(rawValue: String(position)) {
-            self = .home(player, field)
-        }
-        else if let field = Game.Out.Field(rawValue: String(position)) {
-            self = .out(player, field)
-        }
-        else {
-            return nil
-        }
-    }
+public struct GameError: Error {
+    public let message: String
 }
