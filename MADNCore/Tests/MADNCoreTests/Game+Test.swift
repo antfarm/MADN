@@ -9,9 +9,13 @@ extension Game.Field: ExpressibleByStringLiteral {
 
 extension Game {
 
-    func adding(_ pieces: [Field: Player]) -> Game {
+    func adding(_ pieces: [Field: Player]) throws -> Game {
         var game = self
-        game.state.pieces.merge(pieces) { _, new in new }
+
+        for (field, player) in pieces {
+            try game.state.board.add(pieceFor: player, at: field)
+        }
+
         return game
     }
 

@@ -11,7 +11,7 @@ public struct Game {
     public var die: DieValue? { state.die }
 
     public func player(at field: Field) -> Player? {
-        Rules.player(at: field, in: state)
+        state.board.player(at: field)
     }
 
     public func target(from field: Field) throws -> Field? {
@@ -31,16 +31,12 @@ public struct Game {
     }
 
     struct State {
-        var pieces: Pieces
+        var board: Board
         var player: Player
         var die: DieValue? = nil
 
         init(pieces: Pieces?, player: Player, die: DieValue? = nil) throws {
-            let pieces = pieces ?? Rules.initialBoard
-
-            try Rules.validateBoard(pieces)
-
-            self.pieces = pieces
+            self.board = try Board(pieces: pieces)
             self.player = player
             self.die = die
         }

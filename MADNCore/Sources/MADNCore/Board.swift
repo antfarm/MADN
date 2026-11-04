@@ -1,5 +1,50 @@
 extension Game {
 
+    struct Board {
+        private var pieces: Pieces = [:]
+
+        init(pieces: Pieces? = nil) throws {
+            let initialPieces = Dictionary(uniqueKeysWithValues:
+                Player.allCases.flatMap { player in
+                    Out.Field.allCases.map { field in (Field.out(player, field), player) }
+                }
+            )
+
+            for (field, player) in pieces ?? initialPieces {
+                try add(pieceFor: player, at: field)
+            }
+        }
+
+        func player(at field: Field) -> Player? {
+            pieces[field]
+        }
+
+        func pieces(for player: Player) -> Set<Field> {
+            Set(pieces.filter { $0.value == player }.keys)
+        }
+
+        mutating func add(pieceFor player: Player, at field: Field) throws {
+            guard pieces[field] == nil else {
+                throw GameError(message: "\(field) is occupied")
+            }
+
+            switch field {
+            case .home(let owner, _), .out(let owner, _):
+                guard owner == player else {
+                    throw GameError(message: "Player \(player.rawValue) cannot be on \(field)")
+                }
+            case .track:
+                break
+            }
+
+            guard pieces(for: player).count < Out.Field.allCases.count else {
+                throw GameError(message: "Player \(player.rawValue) has too many pieces")
+            }
+
+            pieces[field] = player
+        }
+    }
+
     public enum Field: Hashable, CaseIterable, Sendable {
         case track(Player, Track.Field)
         case home(Player, Home.Field)

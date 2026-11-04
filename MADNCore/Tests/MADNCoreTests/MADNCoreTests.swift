@@ -26,8 +26,8 @@ struct OutField {
     }
 
     @Test("cannot move with a 6 when an own piece is on the start field")
-    func startFieldBlocked() {
-        let game = game
+    func startFieldBlocked() throws {
+        let game = try game
             .adding(["00": .one])
             .rolled(.six)
 
