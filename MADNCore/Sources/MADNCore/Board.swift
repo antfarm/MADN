@@ -135,18 +135,21 @@ extension Game.Player {
     )
 }
 
-extension Game.Field: LosslessStringConvertible {
+/**
+    1A 1B       18 19 20       2B 2A
+    1C 1D       17 2a 21       2D 2C
+                16 2b 22
+                15 2c 23
+    10 11 12 13 14 2d 24 25 26 27 28
+    09 1a 1b 1c 1d    3d 3c 3b 3a 29
+    08 07 06 05 04 0d 34 33 32 31 30
+                03 0c 35
+                02 0b 36
+    0C 0D       01 0a 37       3D 3C
+    0A 0B       00 39 38       3B 3A
+*/
 
-    public var description: String {
-        switch self {
-        case .track(let player, let field):
-            "\(player.rawValue)\(field.index)"
-        case .home(let player, let field):
-            "\(player.rawValue)\(field.rawValue)"
-        case .out(let player, let field):
-            "\(player.rawValue)\(field.rawValue)"
-        }
-    }
+extension Game.Field: LosslessStringConvertible {
 
     public init?(_ description: String) {
         guard description.count == 2,
@@ -167,6 +170,17 @@ extension Game.Field: LosslessStringConvertible {
         }
         else {
             return nil
+        }
+    }
+
+    public var description: String {
+        switch self {
+        case .track(let player, let field):
+            "\(player.rawValue)\(field.index)"
+        case .home(let player, let field):
+            "\(player.rawValue)\(field.rawValue)"
+        case .out(let player, let field):
+            "\(player.rawValue)\(field.rawValue)"
         }
     }
 }
