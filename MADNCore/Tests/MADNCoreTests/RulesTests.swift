@@ -120,6 +120,24 @@ struct TrackField {
 
         #expect(try !game.possibleMoves().contains { $0.from == "39" })
     }
+
+    @Test("cannot pass a piece in the home row")
+    func passInHomeRow() throws {
+        let game = try Game(pieces: ["38": .one, "0a": .one]).rolled(.five)
+
+        #expect(try !game.possibleMoves().contains { $0.from == "38" })
+    }
+}
+
+@Suite("A piece on a home field")
+struct HomeField {
+
+    @Test("cannot pass a piece in the home row")
+    func passInHomeRow() throws {
+        let game = try Game(pieces: ["0a": .one, "0b": .one]).rolled(.two)
+
+        #expect(try !game.possibleMoves().contains { $0.from == "0a" })
+    }
 }
 
 @Suite("Possible moves")

@@ -18,6 +18,12 @@ extension Game {
                           let target = state.player.field(stepsTravelled: steps + die.rawValue) // past the home row
                     else { return nil }
 
+                    guard (steps + 1 ..< steps + die.rawValue) // passing a piece in the home row
+                        .compactMap(state.player.field(stepsTravelled:))
+                        .filter(\.isHome)
+                        .allSatisfy({ state.board.player(at: $0) == nil })
+                    else { return nil }
+
                     return (from: field, to: target)
                 }
             }
