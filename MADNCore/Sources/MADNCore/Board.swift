@@ -151,12 +151,16 @@ extension Game.Player {
 
     private static let paths: [Game.Player: [Game.Field]] = Dictionary(uniqueKeysWithValues:
         Game.Player.allCases.map { player in
-            let players = sequence(first: player) { $0.next }.prefix(Game.Player.allCases.count)
-            let track = players.flatMap { player in Game.Track.Field.allCases.map { Game.Field.track(player, $0) } }
-
-            return (player, track + player.homeFields)
+            (player, player.track + player.homeFields)
         }
     )
+
+    private var track: [Game.Field] { // the circle, from own start field
+        let fields = Game.Field.trackFields
+        let start = rawValue * Game.Track.sectorLength
+
+        return Array(fields[start...] + fields[..<start])
+    }
 }
 
 /**
