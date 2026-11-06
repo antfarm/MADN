@@ -41,6 +41,12 @@ extension Game {
             }
 
             var next = state
+
+            if let opponent = state.board.player(at: target) {
+                let outField = opponent.outFields.first { state.board.player(at: $0) == nil }!
+                try next.board.move(from: target, to: outField)
+            }
+
             try next.board.move(from: field, to: target)
 
             if state.die != .six {

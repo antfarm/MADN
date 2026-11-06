@@ -89,6 +89,24 @@ struct TrackField {
         #expect(try game.possibleMoves().contains { $0.from == "05" && $0.to == "08" })
     }
 
+    @Test("captures an opponent's piece when landing on it")
+    func captures() throws {
+        let game = try Game(pieces: ["05": .one, "08": .two])
+            .rolled(.three)
+            .moved("05")
+
+        #expect(game.player(at: "08") == .one)
+    }
+
+    @Test("moves to its player's out area when captured")
+    func captured() throws {
+        let game = try Game(pieces: ["05": .one, "08": .two])
+            .rolled(.three)
+            .moved("05")
+
+        #expect(Game.Player.two.outFields.contains { game.player(at: $0) == .two })
+    }
+
     @Test("cannot move to a field occupied by an own piece")
     func targetOwn() throws {
         let game = try Game(pieces: ["05": .one, "08": .one]).rolled(.three)
