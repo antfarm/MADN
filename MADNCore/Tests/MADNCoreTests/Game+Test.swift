@@ -21,7 +21,7 @@ extension Game {
 
     func rolled(_ die: DieValue) -> Game {
         var game = self
-        game.roll(die)
+        try! game.roll(die)
         return game
     }
 

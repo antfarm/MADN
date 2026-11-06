@@ -81,7 +81,7 @@ final class GameViewModel {
     // actions
 
     func roll() {
-        game.roll()
+        try! game.roll()
     }
 
     func move(field: Game.Field) {

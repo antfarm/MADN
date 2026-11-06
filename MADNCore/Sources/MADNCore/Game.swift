@@ -22,8 +22,8 @@ public struct Game {
         Rules.movablePieces(in: state)
     }
 
-    public mutating func roll(_ die: DieValue = .random()) {
-        state = Rules.roll(die, in: state)
+    public mutating func roll(_ die: DieValue = .random()) throws {
+        state = try Rules.roll(die, in: state)
     }
 
     public mutating func move(field: Field) throws {

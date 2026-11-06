@@ -31,7 +31,11 @@ extension Game {
             }
         }
 
-        static func roll(_ die: DieValue, in state: State) -> State {
+        static func roll(_ die: DieValue, in state: State) throws -> State {
+            guard state.die == nil else {
+                throw GameError(message: "Die already rolled")
+            }
+
             var next = state
             next.die = die
             return next
