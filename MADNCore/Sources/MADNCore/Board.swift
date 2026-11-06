@@ -6,7 +6,7 @@ extension Game {
         init(pieces: Pieces? = nil) throws {
             let initialPieces = Dictionary(uniqueKeysWithValues:
                 Player.allCases.flatMap { player in
-                    Out.Field.allCases.map { field in (Field.out(player, field), player) }
+                    player.outFields.map { ($0, player) }
                 }
             )
 
@@ -60,13 +60,21 @@ extension Game {
         case out(Player, Out.Field)
 
         public static var allCases: [Field] {
-            trackFields
-            + Player.allCases.flatMap { player in Home.Field.allCases.map { .home(player, $0) } }
-            + Player.allCases.flatMap { player in Out.Field.allCases.map { .out(player, $0) } }
+            trackFields + homeFields + outFields
         }
 
         public static var trackFields: [Field] {
-            Player.allCases.flatMap { player in Track.Field.allCases.map { .track(player, $0) } }
+            Player.allCases.flatMap { player in
+                Track.Field.allCases.map { .track(player, $0) }
+            }
+        }
+
+        public static var homeFields: [Field] {
+            Player.allCases.flatMap(\.homeFields)
+        }
+
+        public static var outFields: [Field] {
+            Player.allCases.flatMap(\.outFields)
         }
 
         public var isTrack: Bool {
@@ -115,6 +123,14 @@ extension Game {
 
 extension Game.Player {
 
+    var homeFields: [Game.Field] {
+        Game.Home.Field.allCases.map { .home(self, $0) }
+    }
+
+    var outFields: [Game.Field] {
+        Game.Out.Field.allCases.map { .out(self, $0) }
+    }
+
     func stepsTravelled(to field: Game.Field) throws -> Int {
         guard let steps = path.firstIndex(of: field) else {
             throw GameError(message: "Field not on player's path")
@@ -137,9 +153,8 @@ extension Game.Player {
         Game.Player.allCases.map { player in
             let players = sequence(first: player) { $0.next }.prefix(Game.Player.allCases.count)
             let track = players.flatMap { player in Game.Track.Field.allCases.map { Game.Field.track(player, $0) } }
-            let home = Game.Home.Field.allCases.map { Game.Field.home(player, $0) }
 
-            return (player, track + home)
+            return (player, track + player.homeFields)
         }
     )
 }
