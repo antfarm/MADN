@@ -6,7 +6,7 @@ extension Game {
             guard let owner = state.board.player(at: field) else { throw GameError(message: "No piece on field") }
             guard let die = state.die else { throw GameError(message: "Die not rolled") }
 
-            if case .out = field {
+            if field.isOut {
                 return die == .six ? owner.startField : nil // bring in
             }
 

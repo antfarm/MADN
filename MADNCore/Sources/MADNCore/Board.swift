@@ -28,16 +28,11 @@ extension Game {
                 throw GameError(message: "\(field) is occupied")
             }
 
-            switch field {
-            case .home(let owner, _), .out(let owner, _):
-                guard owner == player else {
-                    throw GameError(message: "Player \(player.rawValue) cannot be on \(field)")
-                }
-            case .track:
-                break
+            guard field.isTrack || field.owner == player else {
+                throw GameError(message: "Player \(player.rawValue) cannot be on \(field)")
             }
 
-            guard pieces(for: player).count < Out.Field.allCases.count else {
+            guard pieces(for: player).count < player.outFields.count else {
                 throw GameError(message: "Player \(player.rawValue) has too many pieces")
             }
 
@@ -81,12 +76,24 @@ extension Game {
             if case .track = self { true } else { false }
         }
 
+        public var isHome: Bool {
+            if case .home = self { true } else { false }
+        }
+
+        public var isOut: Bool {
+            if case .out = self { true } else { false }
+        }
+
+        public var isStart: Bool {
+            if case .track(let sector, _) = self { self == sector.startField } else { false }
+        }
+
         public var owner: Player? {
             switch self {
             case .home(let player, _), .out(let player, _):
                 player
             case .track(let sector, _):
-                self == sector.startField ? sector : nil
+                isStart ? sector : nil
             }
         }
     }
