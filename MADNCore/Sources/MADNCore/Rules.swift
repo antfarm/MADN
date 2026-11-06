@@ -21,7 +21,7 @@ extension Game {
                     guard (steps + 1 ..< steps + die.rawValue) // passing a piece in the home row
                         .compactMap(state.player.field(stepsTravelled:))
                         .filter(\.isHome)
-                        .allSatisfy({ state.board.player(at: $0) == nil })
+                        .allSatisfy(state.board.isEmpty)
                     else { return nil }
 
                     return (from: field, to: target)
@@ -49,7 +49,7 @@ extension Game {
             var next = state
 
             if let opponent = state.board.player(at: target) {
-                let outField = opponent.outFields.first { state.board.player(at: $0) == nil }!
+                let outField = opponent.outFields.first(where: state.board.isEmpty)!
                 try next.board.move(from: target, to: outField)
             }
 

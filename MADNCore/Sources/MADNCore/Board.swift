@@ -19,6 +19,9 @@ extension Game {
             pieces[field]
         }
 
+        func isEmpty(_ field: Field) -> Bool {
+            player(at: field) == nil
+        }
         func pieces(for player: Player) -> Set<Field> {
             Set(pieces.filter { $0.value == player }.keys)
         }
