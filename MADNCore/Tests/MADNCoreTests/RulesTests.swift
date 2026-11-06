@@ -50,14 +50,14 @@ struct TrackField {
 
     @Test("continues from the last sector into the first")
     func crossesSectors() throws {
-        let game = try Game(pieces: ["38": .two]).rolled(.three)
+        let game = try Game(pieces: ["38": .two], player: .two).rolled(.three)
 
         #expect(try game.target(from: "38") == "01")
     }
 
     @Test("enters its own home row after its last track field")
     func entersHomeRow() throws {
-        let game = try Game(pieces: ["18": .three]).rolled(.three)
+        let game = try Game(pieces: ["18": .three], player: .three).rolled(.three)
 
         #expect(try game.target(from: "18") == "2b")
     }
