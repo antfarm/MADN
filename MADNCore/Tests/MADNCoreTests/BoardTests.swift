@@ -124,6 +124,11 @@ struct Fields {
         #expect(("11" as Game.Field).owner == nil)
     }
 
+    @Test("the start fields are 10 fields apart")
+    func startFields() {
+        #expect(Game.Player.allCases.map(\.startField) == ["00", "10", "20", "30"])
+    }
+
     @Test("there are 72 fields, without duplicates")
     func allFields() {
         #expect(Game.Field.allCases.count == 72)

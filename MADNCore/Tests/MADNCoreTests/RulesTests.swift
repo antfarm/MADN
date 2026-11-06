@@ -12,6 +12,26 @@ struct Turn {
         #expect(next.player == (die == .six ? .one : .two))
         #expect(next.die == nil)
     }
+
+    @Test("the chosen player starts")
+    func chosenPlayer() throws {
+        let game = try Game(player: .three)
+
+        #expect(game.player == .three)
+    }
+
+    @Test("players take turns in clockwise order")
+    func clockwise() {
+        #expect(Game.Player.allCases.map(\.next) == [.two, .three, .four, .one])
+    }
+
+    @Test("rolling shows a value from 1 to 6")
+    func roll() throws {
+        var game = try Game()
+        try game.roll()
+
+        #expect(try (1...6).contains(#require(game.die).rawValue))
+    }
 }
 
 @Suite("A piece on an out field")
@@ -61,6 +81,27 @@ struct TrackField {
 
         #expect(try game.possibleMoves().contains { $0.from == "18" && $0.to == "2b" })
     }
+
+    @Test("can move to a field occupied by an opponent's piece")
+    func targetOpponent() throws {
+        let game = try Game(pieces: ["05": .one, "08": .two]).rolled(.three)
+
+        #expect(try game.possibleMoves().contains { $0.from == "05" && $0.to == "08" })
+    }
+
+    @Test("cannot move to a field occupied by an own piece")
+    func targetOwn() throws {
+        let game = try Game(pieces: ["05": .one, "08": .one]).rolled(.three)
+
+        #expect(try !game.possibleMoves().contains { $0.from == "05" })
+    }
+
+    @Test("cannot move past the end of its home row")
+    func pastHomeRow() throws {
+        let game = try Game(pieces: ["39": .one]).rolled(.six)
+
+        #expect(try !game.possibleMoves().contains { $0.from == "39" })
+    }
 }
 
 @Suite("Possible moves")
@@ -71,5 +112,12 @@ struct PossibleMoves {
         let game = try Game(pieces: ["05": .one])
 
         #expect(throws: GameError.self) { try game.possibleMoves() }
+    }
+
+    @Test("lists no moves for another player's pieces")
+    func otherPlayer() throws {
+        let game = try Game(pieces: ["05": .one, "15": .two]).rolled(.three)
+
+        #expect(try !game.possibleMoves().contains { $0.from == "15" })
     }
 }
