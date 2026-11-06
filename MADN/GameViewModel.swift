@@ -76,7 +76,11 @@ final class GameViewModel {
         game.player(at: field)
     }
 
-    var movablePieces: Set<Game.Field> { game.movablePieces() }
+    var movablePieces: Set<Game.Field> {
+        guard game.die != nil else { return [] }
+
+        return Set(try! game.possibleMoves().map(\.from))
+    }
 
     // actions
 

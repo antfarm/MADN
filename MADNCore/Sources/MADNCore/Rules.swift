@@ -1,34 +1,28 @@
 extension Game {
 
+    typealias Move = (from: Field, to: Field)
+
     enum Rules {
 
-        static func target(from field: Field, in state: State) throws -> Field? {
-            guard let owner = state.board.player(at: field) else { throw GameError(message: "No piece on field") }
+        static func possibleMoves(in state: State) throws -> [Move] {
             guard let die = state.die else { throw GameError(message: "Die not rolled") }
-            guard owner == state.player else { return nil } // current player's piece
 
-            let target: Field?
+            let moves: [Move] = state.board.pieces(for: state.player).compactMap { field in
+                if field.isOut {
+                    guard die == .six else { return nil } // bring in only with a 6
 
-            if field.isOut {
-                target = die == .six ? owner.startField : nil // bring in
-            } else {
-                let steps = try owner.stepsTravelled(to: field)
-                target = owner.field(stepsTravelled: steps + die.rawValue) // ordinary move
+                    return (from: field, to: state.player.startField)
+                }
+                else {
+                    guard let steps = try? state.player.stepsTravelled(to: field), // move not possible
+                          let target = state.player.field(stepsTravelled: steps + die.rawValue) // past the home row
+                    else { return nil }
+
+                    return (from: field, to: target)
+                }
             }
 
-            guard let target else { return nil } // target field exists
-
-            guard state.board.player(at: target) != owner else { return nil } // target not occupied by another of the owner's pieces
-
-            return target
-        }
-
-        static func movablePieces(in state: State) -> Set<Field> {
-            state.board.pieces(for: state.player).filter { field in
-                let canMove = (try? target(from: field, in: state)) != nil
-
-                return canMove
-            }
+            return moves.filter { state.board.player(at: $0.to) != state.player } // target not occupied by an own piece
         }
 
         static func roll(_ die: DieValue, in state: State) throws -> State {
@@ -42,7 +36,7 @@ extension Game {
         }
 
         static func move(field: Field, in state: State) throws -> State {
-            guard let target = try target(from: field, in: state) else {
+            guard let target = try possibleMoves(in: state).first(where: { $0.from == field })?.to else {
                 throw GameError(message: "\(field) cannot move")
             }
 

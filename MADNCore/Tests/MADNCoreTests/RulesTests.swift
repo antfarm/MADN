@@ -20,10 +20,10 @@ struct OutField {
     let game = try! Game(pieces: ["0A": .one])
 
     @Test("can only move with a 6", arguments: Game.DieValue.allCases)
-    func onlyWithSix(die: Game.DieValue) {
+    func onlyWithSix(die: Game.DieValue) throws {
         let game = game.rolled(die)
 
-        #expect(game.movablePieces().contains("0A") == (die == .six))
+        #expect(try game.possibleMoves().contains { $0.from == "0A" } == (die == .six))
     }
 
     @Test("cannot move with a 6 when an own piece is on the start field")
@@ -32,7 +32,7 @@ struct OutField {
             .adding(["00": .one])
             .rolled(.six)
 
-        #expect(!game.movablePieces().contains("0A"))
+        #expect(try !game.possibleMoves().contains { $0.from == "0A" })
     }
 }
 
@@ -52,13 +52,24 @@ struct TrackField {
     func crossesSectors() throws {
         let game = try Game(pieces: ["38": .two], player: .two).rolled(.three)
 
-        #expect(try game.target(from: "38") == "01")
+        #expect(try game.possibleMoves().contains { $0.from == "38" && $0.to == "01" })
     }
 
     @Test("enters its own home row after its last track field")
     func entersHomeRow() throws {
         let game = try Game(pieces: ["18": .three], player: .three).rolled(.three)
 
-        #expect(try game.target(from: "18") == "2b")
+        #expect(try game.possibleMoves().contains { $0.from == "18" && $0.to == "2b" })
+    }
+}
+
+@Suite("Possible moves")
+struct PossibleMoves {
+
+    @Test("rejects asking before the die is rolled")
+    func notRolled() throws {
+        let game = try Game(pieces: ["05": .one])
+
+        #expect(throws: GameError.self) { try game.possibleMoves() }
     }
 }

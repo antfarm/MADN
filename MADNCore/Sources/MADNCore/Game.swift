@@ -14,12 +14,8 @@ public struct Game {
         state.board.player(at: field)
     }
 
-    public func target(from field: Field) throws -> Field? {
-        try Rules.target(from: field, in: state)
-    }
-
-    public func movablePieces() -> Set<Field> {
-        Rules.movablePieces(in: state)
+    public func possibleMoves() throws -> [(from: Field, to: Field)] {
+        try Rules.possibleMoves(in: state)
     }
 
     public mutating func roll(_ die: DieValue = .random()) throws {
