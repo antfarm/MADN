@@ -46,20 +46,11 @@ final class GameViewModel {
         .degrees(Double(player.rawValue) * 90)
     }
 
-    private static let initialPieces: [Game.Field: Game.Player] = Dictionary(uniqueKeysWithValues:
-        zip(Game.Player.allCases, [
-            ["0A", "0a", "00", "09"],
-            ["1A", "1a", "11", "19"],
-            ["2A", "2a", "22", "29"],
-            ["3A", "3a", "33", "39"],
-        ]).flatMap { player, labels in
-            labels.map { (Game.Field($0)!, player) }
-        }
-    )
+    private var game: Game
 
-    private var game = try! Game(pieces: initialPieces)
+    init(game: Game = try! Game()) {
+        self.game = game
 
-    init() {
         let fields = Self.boardMap.flatMap { $0 }.compactMap { $0 }
 
         assert(Set(fields).count == fields.count, "Duplicate fields in board map")

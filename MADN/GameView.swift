@@ -201,6 +201,23 @@ struct UnstyledButtonStyle: ButtonStyle {
     }
 }
 
+import MADNCore
+
 #Preview {
     GameView()
+}
+
+#Preview("Mixed board") {
+    let pieces: [Game.Field: Game.Player] = Dictionary(uniqueKeysWithValues:
+        zip(Game.Player.allCases, [
+            ["0A", "0a", "00", "09"],
+            ["1A", "1a", "11", "19"],
+            ["2A", "2a", "22", "29"],
+            ["3A", "3a", "33", "39"],
+        ]).flatMap { player, labels in
+            labels.map { (Game.Field($0)!, player) }
+        }
+    )
+
+    Board(game: GameViewModel(game: try! Game(pieces: pieces)))
 }
