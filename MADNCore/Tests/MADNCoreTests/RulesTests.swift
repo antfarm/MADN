@@ -50,6 +50,16 @@ struct Turn {
         #expect(game.player == .two)
     }
 
+    @Test("a 6 that cannot be used still lets the player roll again")
+    func passAfterSix() throws {
+        let game = try Game(pieces: ["0d": .one])
+            .rolled(.six)
+            .passed()
+
+        #expect(game.player == .one)
+        #expect(game.die == nil)
+    }
+
     @Test("rolling shows a value from 1 to 6")
     func roll() throws {
         var game = try Game()

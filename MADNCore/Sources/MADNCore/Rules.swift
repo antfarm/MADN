@@ -65,8 +65,7 @@ extension Game {
             }
 
             var next = state
-            next.player = state.player.next
-            next.die = nil
+            advanceTurn(in: &next)
             return next
         }
 
