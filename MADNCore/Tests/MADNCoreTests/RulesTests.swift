@@ -4,12 +4,21 @@ import Testing
 @Suite("The turn")
 struct Turn {
 
-    @Test("a 6 lets the player roll again, anything else passes the turn", arguments: Game.DieValue.allCases)
-    func turnOrder(die: Game.DieValue) throws {
+    @Test("moving after a 6 lets the player roll again")
+    func moveAfterSix() throws {
+        let state = try Game.State(pieces: ["05": .one], player: .one, die: .six)
+        let next = try Game.Rules.move(field: "05", in: state)
+
+        #expect(next.player == .one)
+        #expect(next.die == nil)
+    }
+
+    @Test("moving advances the turn after anything but a 6", arguments: [.one, .two, .three, .four, .five] as [Game.DieValue])
+    func moveAdvancesTurn(die: Game.DieValue) throws {
         let state = try Game.State(pieces: ["05": .one], player: .one, die: die)
         let next = try Game.Rules.move(field: "05", in: state)
 
-        #expect(next.player == (die == .six ? .one : .two))
+        #expect(next.player == .two)
         #expect(next.die == nil)
     }
 
