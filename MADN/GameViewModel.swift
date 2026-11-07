@@ -76,7 +76,15 @@ final class GameViewModel {
     // actions
 
     func roll() {
-        try! game.roll()
+        do {
+            try game.roll()
+
+            if try game.possibleMoves().isEmpty {
+                try game.pass()
+            }
+        } catch {
+            print(error)
+        }
     }
 
     func move(field: Game.Field) {
