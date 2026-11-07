@@ -42,7 +42,7 @@ struct Board: View {
                                 pieceColor: game.color(for: player),
                                 isHighlighted: hasMovablePiece,
                                 isSmall: !game.isTrackField(field) && player == nil,
-                                onTap: { game.move(field: field) }
+                                onTap: { withAnimation { game.move(field: field) } }
                             )
                         } else {
                             Color.clear

@@ -80,7 +80,10 @@ final class GameViewModel {
             try game.roll()
 
             if try game.possibleMoves().isEmpty {
-                try game.pass()
+                Task {
+                    try? await Task.sleep(for: .seconds(1.5)) // show the roll before passing
+                    withAnimation { try? game.pass() }
+                }
             }
         } catch {
             print(error)
