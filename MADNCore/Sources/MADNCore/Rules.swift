@@ -39,6 +39,9 @@ extension Game {
                 guard leaveStartMoves.isEmpty else { return leaveStartMoves } // clearing the start field comes next
             }
 
+            let captureMoves = moves.filter { !state.board.isEmpty($0.to) }
+            guard captureMoves.isEmpty else { return captureMoves } // capturing comes next
+
             return moves
         }
 

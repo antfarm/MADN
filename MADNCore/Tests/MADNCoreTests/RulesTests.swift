@@ -176,6 +176,13 @@ struct TrackField {
 
         #expect(try game.possibleMoves().map(\.from) == ["00"])
     }
+
+    @Test("must capture an opponent's piece when possible")
+    func mustCapture() throws {
+        let game = try Game(pieces: ["05": .one, "15": .one, "08": .two]).rolled(.three)
+
+        #expect(try game.possibleMoves().map(\.from) == ["05"])
+    }
 }
 
 @Suite("A piece on a home field")
