@@ -89,6 +89,13 @@ struct OutField {
 
         #expect(try !game.possibleMoves().contains { $0.from == "0A" })
     }
+
+    @Test("must move in with a 6")
+    func mustMoveIn() throws {
+        let game = try Game(pieces: ["0A": .one, "05": .one]).rolled(.six)
+
+        #expect(try game.possibleMoves().map(\.from) == ["0A"])
+    }
 }
 
 @Suite("A piece on a track field")

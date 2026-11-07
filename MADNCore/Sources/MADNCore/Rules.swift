@@ -27,8 +27,12 @@ extension Game {
                     return (from: field, to: target)
                 }
             }
+            .filter { state.board.player(at: $0.to) != state.player } // target not occupied by an own piece
 
-            return moves.filter { state.board.player(at: $0.to) != state.player } // target not occupied by an own piece
+            let bringInMoves = moves.filter { $0.from.isOut }
+            guard bringInMoves.isEmpty else { return bringInMoves } // bringing in a piece comes first
+
+            return moves
         }
 
         static func roll(_ die: DieValue, in state: State) throws -> State {
