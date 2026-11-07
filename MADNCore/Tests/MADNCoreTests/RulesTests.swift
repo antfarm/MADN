@@ -41,6 +41,15 @@ struct Turn {
         #expect(throws: GameError.self) { try game.passed() }
     }
 
+    @Test("passing advances the turn when no move is possible")
+    func passWithoutMove() throws {
+        let game = try Game(pieces: ["0d": .one])
+            .rolled(.one)
+            .passed()
+
+        #expect(game.player == .two)
+    }
+
     @Test("rolling shows a value from 1 to 6")
     func roll() throws {
         var game = try Game()

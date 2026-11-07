@@ -68,7 +68,10 @@ extension Game {
                 throw GameError(message: "A move is possible")
             }
 
-            return state
+            var next = state
+            next.player = state.player.next
+            next.die = nil
+            return next
         }
     }
 }
