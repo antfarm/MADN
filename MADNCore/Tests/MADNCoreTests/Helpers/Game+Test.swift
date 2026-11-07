@@ -30,4 +30,10 @@ extension Game {
         try game.move(field: field)
         return game
     }
+
+    func passed() throws -> Game {
+        var game = self
+        try game.pass()
+        return game
+    }
 }

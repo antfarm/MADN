@@ -25,6 +25,10 @@ public struct Game {
     public mutating func move(field: Field) throws {
         state = try Rules.move(field: field, in: state)
     }
+
+    public mutating func pass() throws {
+        state = try Rules.pass(in: state)
+    }
 }
 
 public struct GameError: Error {

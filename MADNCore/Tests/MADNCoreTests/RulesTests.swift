@@ -25,6 +25,13 @@ struct Turn {
         #expect(Game.Player.allCases.map(\.next) == [.two, .three, .four, .one])
     }
 
+    @Test("cannot pass while a move is possible")
+    func noPassWithMove() throws {
+        let game = try Game(pieces: ["05": .one]).rolled(.three)
+
+        #expect(throws: GameError.self) { try game.passed() }
+    }
+
     @Test("rolling shows a value from 1 to 6")
     func roll() throws {
         var game = try Game()

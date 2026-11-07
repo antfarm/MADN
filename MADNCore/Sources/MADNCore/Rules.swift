@@ -62,5 +62,13 @@ extension Game {
             next.die = nil
             return next
         }
+
+        static func pass(in state: State) throws -> State {
+            guard try possibleMoves(in: state).isEmpty else {
+                throw GameError(message: "A move is possible")
+            }
+
+            return state
+        }
     }
 }
