@@ -132,6 +132,13 @@ struct TrackField {
 @Suite("A piece on a home field")
 struct HomeField {
 
+    @Test("moves to its target field")
+    func movesToTarget() throws {
+        let game = try Game(pieces: ["0a": .one]).rolled(.two)
+
+        #expect(try game.possibleMoves().contains { $0.from == "0a" && $0.to == "0c" })
+    }
+
     @Test("cannot pass a piece in the home row")
     func passInHomeRow() throws {
         let game = try Game(pieces: ["0a": .one, "0b": .one]).rolled(.two)
