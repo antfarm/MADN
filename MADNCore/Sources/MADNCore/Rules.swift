@@ -29,9 +29,9 @@ extension Game {
             }
             .filter { state.board.player(at: $0.to) != state.player } // target not occupied by an own piece
 
-            let hasStagedPieces = state.board.pieces(for: state.player).contains(where: \.isOut)
+            let pieces = state.board.pieces(for: state.player)
 
-            if hasStagedPieces {
+            if pieces.contains(where: \.isOut) {
                 let bringInMoves = moves.filter { $0.from.isOut }
                 guard bringInMoves.isEmpty else { return bringInMoves } // bringing in a piece comes first
 
@@ -79,6 +79,18 @@ extension Game {
             }
 
             var next = state
+
+            let pieces = state.board.pieces(for: state.player)
+
+            if pieces.contains(where: \.isOut) && !pieces.contains(where: \.isTrack) { // some pieces staged, none on the track
+                let homePieces = pieces.filter(\.isHome)
+
+                if homePieces == Set(state.player.homeFields.suffix(homePieces.count)) { // packed at the end of the home row
+                    next.die = nil // roll again
+                    return next
+                }
+            }
+
             advanceTurn(in: &next)
             return next
         }

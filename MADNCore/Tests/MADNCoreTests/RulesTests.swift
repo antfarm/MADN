@@ -60,6 +60,25 @@ struct Turn {
         #expect(game.die == nil)
     }
 
+    @Test("passing lets the player roll again when bringing in is the only possible move")
+    func passOnlyBringIn() throws {
+        let game = try Game(pieces: ["0A": .one])
+            .rolled(.three)
+            .passed()
+
+        #expect(game.player == .one)
+        #expect(game.die == nil)
+    }
+
+    @Test("passing advances the turn when a piece could move with another roll")
+    func passWithBlockedPiece() throws {
+        let game = try Game(pieces: ["0A": .one, "39": .one])
+            .rolled(.five)
+            .passed()
+
+        #expect(game.player == .two)
+    }
+
     @Test("rolling shows a value from 1 to 6")
     func roll() throws {
         var game = try Game()
