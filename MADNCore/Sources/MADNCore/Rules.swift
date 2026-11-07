@@ -55,11 +55,7 @@ extension Game {
 
             try next.board.move(from: field, to: target)
 
-            if state.die != .six {
-                next.player = state.player.next
-            }
-
-            next.die = nil
+            advanceTurn(in: &next)
             return next
         }
 
@@ -72,6 +68,14 @@ extension Game {
             next.player = state.player.next
             next.die = nil
             return next
+        }
+
+        private static func advanceTurn(in state: inout State) {
+            if state.die != .six {
+                state.player = state.player.next
+            }
+
+            state.die = nil
         }
     }
 }
