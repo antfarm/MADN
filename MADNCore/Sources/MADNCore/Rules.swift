@@ -82,10 +82,14 @@ extension Game {
 
             let pieces = state.board.pieces(for: state.player)
 
-            if pieces.contains(where: \.isOut) && !pieces.contains(where: \.isTrack) { // some pieces staged, none on the track
+            if state.extraRolls < 2 // extra rolls not used up (3 tries in total)
+                && pieces.contains(where: \.isOut) // some pieces staged
+                && !pieces.contains(where: \.isTrack) { // none on the track
+
                 let homePieces = pieces.filter(\.isHome)
 
                 if homePieces == Set(state.player.homeFields.suffix(homePieces.count)) { // packed at the end of the home row
+                    next.extraRolls += 1
                     next.die = nil // roll again
                     return next
                 }
@@ -101,6 +105,7 @@ extension Game {
             }
 
             state.die = nil
+            state.extraRolls = 0
         }
     }
 }

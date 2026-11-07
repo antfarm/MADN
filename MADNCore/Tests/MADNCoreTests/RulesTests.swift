@@ -79,6 +79,16 @@ struct Turn {
         #expect(game.player == .two)
     }
 
+    @Test("passing advances the turn after three tries without a 6")
+    func passAfterThreeTries() throws {
+        let game = try Game(pieces: ["0A": .one])
+            .rolled(.one).passed()
+            .rolled(.two).passed()
+            .rolled(.three).passed()
+
+        #expect(game.player == .two)
+    }
+
     @Test("rolling shows a value from 1 to 6")
     func roll() throws {
         var game = try Game()

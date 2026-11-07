@@ -4,6 +4,7 @@ extension Game {
         var board: Board
         var player: Player
         var die: DieValue? = nil
+        var extraRolls = 0
 
         init(pieces: Pieces?, player: Player, die: DieValue? = nil) throws {
             self.board = try Board(pieces: pieces)
