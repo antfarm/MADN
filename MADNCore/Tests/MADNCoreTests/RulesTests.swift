@@ -169,6 +169,13 @@ struct TrackField {
 
         #expect(try !game.possibleMoves().contains { $0.from == "38" })
     }
+
+    @Test("must leave its start field while pieces are staged")
+    func mustLeaveStart() throws {
+        let game = try Game(pieces: ["0A": .one, "00": .one, "05": .one]).rolled(.three)
+
+        #expect(try game.possibleMoves().map(\.from) == ["00"])
+    }
 }
 
 @Suite("A piece on a home field")

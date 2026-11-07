@@ -29,8 +29,15 @@ extension Game {
             }
             .filter { state.board.player(at: $0.to) != state.player } // target not occupied by an own piece
 
-            let bringInMoves = moves.filter { $0.from.isOut }
-            guard bringInMoves.isEmpty else { return bringInMoves } // bringing in a piece comes first
+            let hasStagedPieces = state.board.pieces(for: state.player).contains(where: \.isOut)
+
+            if hasStagedPieces {
+                let bringInMoves = moves.filter { $0.from.isOut }
+                guard bringInMoves.isEmpty else { return bringInMoves } // bringing in a piece comes first
+
+                let leaveStartMoves = moves.filter { $0.from == state.player.startField }
+                guard leaveStartMoves.isEmpty else { return leaveStartMoves } // clearing the start field comes next
+            }
 
             return moves
         }
