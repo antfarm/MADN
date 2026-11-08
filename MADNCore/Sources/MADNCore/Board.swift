@@ -3,13 +3,7 @@ extension Game {
     struct Board {
         private var pieces: [Field: Player] = [:]
 
-        init(pieces: PiecePositions? = nil) throws {
-            guard let pieces else {
-                let initialPieces = Dictionary(uniqueKeysWithValues: Player.allCases.map { ($0, Set($0.outFields)) })
-                self = try Board(pieces: initialPieces)
-                return
-            }
-
+        init(pieces: PiecePositions) throws {
             for (player, fields) in pieces {
                 for field in fields {
                     try add(pieceFor: player, at: field)

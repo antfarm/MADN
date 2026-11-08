@@ -1,6 +1,27 @@
 import Testing
 @testable import MADNCore
 
+@Suite("A new game")
+struct NewGame {
+
+    @Test("has only the chosen players' pieces, on their out fields")
+    func chosenPlayers() throws {
+        let game = try Game(players: [.one, .three])
+
+        #expect(Game.Player.one.outFields.allSatisfy { game.player(at: $0) == .one })
+        #expect(Game.Player.two.outFields.allSatisfy { game.player(at: $0) == nil })
+        #expect(Game.Player.three.outFields.allSatisfy { game.player(at: $0) == .three })
+        #expect(Game.Player.four.outFields.allSatisfy { game.player(at: $0) == nil })
+    }
+
+    @Test("starts with each player's pieces on their out fields", arguments: Game.Player.allCases)
+    func initialPieces(player: Game.Player) throws {
+        let game = try Game()
+
+        #expect(player.outFields.allSatisfy { game.player(at: $0) == player })
+    }
+}
+
 @Suite("The turn")
 struct Turn {
 

@@ -5,14 +5,6 @@ import Testing
 @Suite("A new board")
 struct NewBoard {
 
-    @Test("starts with each player's pieces on their out fields", arguments: Game.Player.allCases)
-    func initialPieces(player: Game.Player) throws {
-        let board = try Game.Board()
-        let outFields = Game.Out.Field.allCases.map { Game.Field.out(player, $0) }
-
-        #expect(board.pieces(for: player) == Set(outFields))
-    }
-
     @Test("rejects a piece on another player's home or out field", arguments: ["1a", "1A"] as [Game.Field])
     func wrongPlayer(field: Game.Field) {
         #expect(throws: GameError.self) {

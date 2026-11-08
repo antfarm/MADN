@@ -4,6 +4,10 @@ extension Game {
 
     enum Rules {
 
+        static func initialPieces(for players: Set<Player>) -> PiecePositions {
+            Dictionary(uniqueKeysWithValues: players.map { ($0, Set($0.outFields)) })
+        }
+
         static func possibleMoves(in state: State) throws -> [Move] {
             guard let die = state.die else { throw GameError(message: "Die not rolled") }
 

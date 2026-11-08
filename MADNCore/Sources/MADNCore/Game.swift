@@ -2,7 +2,17 @@ public struct Game {
 
     var state: State
 
-    public init(pieces: PiecePositions? = nil, player: Player = .one) throws {
+    public init(
+        players: Set<Player> = Set(Player.allCases),
+        player: Player = .one
+    ) throws {
+        try self.init(pieces: Rules.initialPieces(for: players), player: player)
+    }
+
+    public init( // for tests and previews
+        pieces: PiecePositions,
+        player: Player = .one
+    ) throws {
         state = try State(pieces: pieces, player: player)
     }
 
