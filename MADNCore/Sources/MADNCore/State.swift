@@ -7,6 +7,10 @@ extension Game {
         var extraRolls = 0
 
         init(pieces: PiecePositions, player: Player, die: DieValue? = nil) throws {
+            guard pieces[player] != nil else {
+                throw GameError(message: "Starting player must be one of the players")
+            }
+
             self.board = try Board(pieces: pieces)
             self.player = player
             self.die = die

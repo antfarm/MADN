@@ -21,6 +21,13 @@ struct NewGame {
         }
     }
 
+    @Test("the starting player must be in the game")
+    func startingPlayerNotInGame() {
+        #expect(throws: GameError.self) {
+            _ = try Game(players: [.one, .two], player: .three)
+        }
+    }
+
     @Test("starts with each player's pieces on their out fields", arguments: Game.Player.allCases)
     func initialPieces(player: Game.Player) throws {
         let game = try Game()
