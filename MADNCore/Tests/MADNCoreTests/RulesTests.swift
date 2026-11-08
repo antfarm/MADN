@@ -50,7 +50,7 @@ struct Turn {
 
     @Test("moving advances the turn after anything but a 6", arguments: [.one, .two, .three, .four, .five] as [Game.DieValue])
     func moveAdvancesTurn(die: Game.DieValue) throws {
-        let state = try Game.State(pieces: [.one: ["05"]], player: .one, die: die)
+        let state = try Game.State(pieces: [.one: ["05"], .two: []], player: .one, die: die)
         let next = try Game.Rules.move(field: "05", in: state)
 
         #expect(next.player == .two)
@@ -62,6 +62,31 @@ struct Turn {
         let game = try Game(player: .three)
 
         #expect(game.player == .three)
+    }
+
+    @Test("players are derived from the initial pieces")
+    func playersFromPieces() throws {
+        let game = try Game(pieces: [.one: ["05"], .three: ["15"]])
+
+        #expect(game.state.players == [.one, .three])
+    }
+
+    @Test("the turn advances to the next player")
+    func advancesToNextPlayer() throws {
+        let game = try Game(pieces: [.one: ["05"], .three: ["15"]])
+            .rolled(.one)
+            .moved("05")
+
+        #expect(game.player == .three)
+    }
+
+    @Test("a single player keeps the turn")
+    func singlePlayerKeepsTurn() throws {
+        let game = try Game(pieces: [.one: ["05"]])
+            .rolled(.one)
+            .moved("05")
+
+        #expect(game.player == .one)
     }
 
     @Test("players take turns in clockwise order")
@@ -78,7 +103,7 @@ struct Turn {
 
     @Test("passing advances the turn when no move is possible")
     func passWithoutMove() throws {
-        let game = try Game(pieces: [.one: ["0d"]])
+        let game = try Game(pieces: [.one: ["0d"], .two: []])
             .rolled(.one)
             .passed()
 
@@ -107,7 +132,7 @@ struct Turn {
 
     @Test("passing advances the turn when a piece could move with another roll")
     func passWithBlockedPiece() throws {
-        let game = try Game(pieces: [.one: ["0A", "39"]])
+        let game = try Game(pieces: [.one: ["0A", "39"], .two: []])
             .rolled(.five)
             .passed()
 
@@ -116,7 +141,7 @@ struct Turn {
 
     @Test("passing advances the turn after three tries without a 6")
     func passAfterThreeTries() throws {
-        let game = try Game(pieces: [.one: ["0A"]])
+        let game = try Game(pieces: [.one: ["0A"], .two: []])
             .rolled(.one).passed()
             .rolled(.two).passed()
             .rolled(.three).passed()

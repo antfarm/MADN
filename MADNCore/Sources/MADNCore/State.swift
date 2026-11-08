@@ -2,6 +2,7 @@ extension Game {
 
     struct State {
         var board: Board
+        let players: Set<Player>
         var player: Player
         var die: DieValue? = nil
         var extraRolls = 0
@@ -12,6 +13,7 @@ extension Game {
             }
 
             self.board = try Board(pieces: pieces)
+            self.players = Set(pieces.keys)
             self.player = player
             self.die = die
         }

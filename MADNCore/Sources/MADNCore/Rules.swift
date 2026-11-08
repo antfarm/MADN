@@ -109,7 +109,8 @@ extension Game {
 
         private static func advanceTurn(in state: inout State) {
             if state.die != .six {
-                state.player = state.player.next
+                let nextPlayer = state.player.next
+                state.player = [nextPlayer, nextPlayer.next, nextPlayer.next.next, state.player].first(where: state.players.contains)! // first one in the game
             }
 
             state.die = nil

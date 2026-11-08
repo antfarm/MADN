@@ -221,6 +221,16 @@ private typealias PiecePositions = [Game.Player: [String]]
     Board(game: GameViewModel(game: try! Game(pieces: pieces)))
 }
 
+#Preview("2 players") {
+    let labels: PiecePositions = [
+        .one:   ["0A", "0a", "00", "09"],
+        .three: ["2A", "2a", "22", "29"],
+    ]
+    let pieces = labels.mapValues { Set($0.map { Game.Field($0)! }) }
+
+    Board(game: GameViewModel(game: try! Game(pieces: pieces)))
+}
+
 #Preview("Finished player") {
     let labels: PiecePositions = [
         .one:   ["0A", "0a", "00", "09"],
