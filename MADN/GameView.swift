@@ -4,10 +4,35 @@ private let highlightColor = Color.orange
 
 struct GameView: View {
 
+    private enum Step {
+        case selectPlayers
+        case selectStartingPlayer(players: Set<Game.Player>)
+        case playing
+    }
+
     @State private var game = GameViewModel()
+    @State private var step = Step.selectPlayers
 
     var body: some View {
-        Board(game: game)
+        switch step {
+        case .selectPlayers:
+            PlayerDialog(title: "Who plays?", buttonTitle: "OK",
+                         players: Game.Player.allCases, color: game.color(for:),
+                         minCount: 2, maxCount: nil, selected: Set(Game.Player.allCases)) {
+                step = .selectStartingPlayer(players: $0)
+            }
+        case .selectStartingPlayer(let players):
+            let chosenPlayers = Game.Player.allCases.filter(players.contains)
+
+            PlayerDialog(title: "Who goes first?", buttonTitle: "OK",
+                         players: chosenPlayers, color: game.color(for:),
+                         minCount: 1, maxCount: 1, selected: [chosenPlayers.first!]) {
+                game.start(players: players, player: $0.first!)
+                step = .playing
+            }
+        case .playing:
+            Board(game: game)
+        }
     }
 }
 
@@ -98,7 +123,7 @@ struct Field: View {
                 .strokeBorder(.primary, lineWidth: 4)
                 .background {
                     Circle().fill(Color(.systemBackground))
-                    if let color { Circle().fill(color.opacity(0.4)) }
+                    if let color { Circle().fill(color.opacity(0.25)) }
                 }
                 .scaleEffect(isSmall ? 0.8 : 1)
                 .overlay { if let pieceColor { Piece(color: pieceColor, isHighlighted: isHighlighted) } }
@@ -195,6 +220,64 @@ struct Die: View {
     }
 }
 
+struct PlayerDialog: View {
+    let title: String
+    let buttonTitle: String
+    let players: [Game.Player]
+    let color: (Game.Player) -> Color
+    let minCount: Int
+    let maxCount: Int?
+
+    @State var selected: Set<Game.Player>
+
+    let onOK: (Set<Game.Player>) -> Void
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Text(title)
+                .font(.title)
+
+            HStack {
+                ForEach(players, id: \.self) { player in
+                    PieceButton(color: color(player), isSelected: selected.contains(player), onTap: { tap(player) })
+                        .frame(width: 100, height: 100)
+                }
+            }
+
+            Button(buttonTitle) { onOK(selected) }
+                .font(.title)
+                .buttonStyle(.borderedProminent)
+        }
+        .padding(32)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
+    }
+
+    private func tap(_ player: Game.Player) {
+        if selected.contains(player) {
+            if selected.count > minCount { selected.remove(player) }
+        }
+        else if maxCount == 1 {
+            selected = [player]
+        }
+        else if selected.count < maxCount ?? players.count {
+            selected.insert(player)
+        }
+    }
+}
+
+struct PieceButton: View {
+    let color: Color
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            Piece(color: color, isHighlighted: isSelected)
+        }
+        .buttonStyle(UnstyledButtonStyle())
+    }
+}
+
 struct UnstyledButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label // no pressed or disabled styling
@@ -241,4 +324,16 @@ private typealias PiecePositions = [Game.Player: [String]]
     let pieces = labels.mapValues { Set($0.map { Game.Field($0)! }) }
 
     Board(game: GameViewModel(game: try! Game(pieces: pieces, player: .one)))
+}
+
+#Preview("Select players") {
+    let game = GameViewModel()
+
+    PlayerDialog(title: "Who plays?", buttonTitle: "OK", players: Game.Player.allCases, color: game.color(for:), minCount: 2, maxCount: nil, selected: Set(Game.Player.allCases)) { _ in }
+}
+
+#Preview("Select starting player") {
+    let game = GameViewModel()
+
+    PlayerDialog(title: "Who starts?", buttonTitle: "OK", players: [.one, .three, .four], color: game.color(for:), minCount: 1, maxCount: 1, selected: [.one]) { _ in }
 }

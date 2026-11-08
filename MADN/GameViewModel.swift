@@ -28,6 +28,10 @@ final class GameViewModel {
 
     // Game actions
 
+    func start(players: Set<Game.Player>, player: Game.Player) {
+        game = try! Game(players: players, player: player)
+    }
+
     func roll() {
         do {
             try game.roll()
