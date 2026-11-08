@@ -18,6 +18,8 @@ public struct Game {
 
     public var player: Player { state.player }
 
+    public var activePlayers: Set<Player> { Rules.activePlayers(in: state) }
+
     public var die: DieValue? { state.die }
 
     public func player(at field: Field) -> Player? {

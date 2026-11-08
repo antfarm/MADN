@@ -107,14 +107,22 @@ extension Game {
             return next
         }
 
+        static func activePlayers(in state: State) -> Set<Player> {
+            state.players.filter { state.board.pieces(for: $0) != Set($0.homeFields) }
+        }
+
         private static func advanceTurn(in state: inout State) {
-            if state.die != .six {
-                let nextPlayer = state.player.next
-                state.player = [nextPlayer, nextPlayer.next, nextPlayer.next.next, state.player].first(where: state.players.contains)! // first one in the game
-            }
+            let shouldRollAgain = state.die == .six && activePlayers(in: state).contains(state.player)
 
             state.die = nil
             state.extraRolls = 0
+
+            if shouldRollAgain { return }
+
+            let nextPlayer = state.player.next
+
+            state.player = [nextPlayer, nextPlayer.next, nextPlayer.next.next]
+                .first(where: activePlayers(in: state).contains) ?? state.player
         }
     }
 }

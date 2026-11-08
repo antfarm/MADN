@@ -89,6 +89,31 @@ struct Turn {
         #expect(game.player == .one)
     }
 
+    @Test("a player with all 4 pieces in their home row no longer gets the turn")
+    func finishedPlayerGetsNoTurn() throws {
+        let game = try Game(pieces: [.one: ["05"], .two: ["1a", "1b", "1c", "1d"], .three: ["25"]])
+            .rolled(.one)
+            .moved("05")
+
+        #expect(game.player == .three)
+    }
+
+    @Test("a finished player is no longer among the active players")
+    func activePlayers() throws {
+        let game = try Game(pieces: [.one: ["0a", "0b", "0c", "0d"], .two: ["05"]])
+
+        #expect(game.activePlayers == [.two])
+    }
+
+    @Test("a player who finishes with a 6 does not roll again")
+    func finishWithSix() throws {
+        let game = try Game(pieces: [.one: ["0b", "0c", "0d", "34"], .two: ["15"], .three: ["25"]])
+            .rolled(.six)
+            .moved("34")
+
+        #expect(game.player == .two)
+    }
+
     @Test("players take turns in clockwise order")
     func clockwise() {
         #expect(Game.Player.allCases.map(\.next) == [.two, .three, .four, .one])
