@@ -1,17 +1,19 @@
 extension Game {
 
     struct Board {
-        private var pieces: Pieces = [:]
+        private var pieces: [Field: Player] = [:]
 
-        init(pieces: Pieces? = nil) throws {
-            let initialPieces = Dictionary(uniqueKeysWithValues:
-                Player.allCases.flatMap { player in
-                    player.outFields.map { ($0, player) }
+        init(pieces: PiecePositions? = nil) throws {
+            guard let pieces else {
+                let initialPieces = Dictionary(uniqueKeysWithValues: Player.allCases.map { ($0, Set($0.outFields)) })
+                self = try Board(pieces: initialPieces)
+                return
+            }
+
+            for (player, fields) in pieces {
+                for field in fields {
+                    try add(pieceFor: player, at: field)
                 }
-            )
-
-            for (field, player) in pieces ?? initialPieces {
-                try add(pieceFor: player, at: field)
             }
         }
 
@@ -51,6 +53,8 @@ extension Game {
             try add(pieceFor: player, at: target)
         }
     }
+
+    public typealias PiecePositions = [Player: Set<Field>]
 
     public enum Field: Hashable, CaseIterable, Sendable {
         case track(Player, Track.Field)

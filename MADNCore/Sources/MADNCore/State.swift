@@ -6,14 +6,12 @@ extension Game {
         var die: DieValue? = nil
         var extraRolls = 0
 
-        init(pieces: Pieces?, player: Player, die: DieValue? = nil) throws {
+        init(pieces: PiecePositions?, player: Player, die: DieValue? = nil) throws {
             self.board = try Board(pieces: pieces)
             self.player = player
             self.die = die
         }
     }
-
-    typealias Pieces = [Field: Player]
 
     public enum Player: Int, CaseIterable, Sendable {
         case one, two, three, four

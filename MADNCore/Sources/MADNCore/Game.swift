@@ -2,7 +2,7 @@ public struct Game {
 
     var state: State
 
-    public init(pieces: [Field: Player]? = nil, player: Player = .one) throws {
+    public init(pieces: PiecePositions? = nil, player: Player = .one) throws {
         state = try State(pieces: pieces, player: player)
     }
 

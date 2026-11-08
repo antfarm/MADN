@@ -16,13 +16,13 @@ struct NewBoard {
     @Test("rejects a piece on another player's home or out field", arguments: ["1a", "1A"] as [Game.Field])
     func wrongPlayer(field: Game.Field) {
         #expect(throws: GameError.self) {
-            _ = try Game.Board(pieces: [field: .one])
+            _ = try Game.Board(pieces: [.one: [field]])
         }
     }
 
     @Test("allows 4 pieces per player")
     func fourPieces() throws {
-        let board = try Game.Board(pieces: ["00": .one, "01": .one, "02": .one, "03": .one])
+        let board = try Game.Board(pieces: [.one: ["00", "01", "02", "03"]])
 
         #expect(board.pieces(for: .one).count == 4)
     }
@@ -30,7 +30,14 @@ struct NewBoard {
     @Test("rejects more than 4 pieces per player")
     func fivePieces() {
         #expect(throws: GameError.self) {
-            _ = try Game.Board(pieces: ["00": .one, "01": .one, "02": .one, "03": .one, "04": .one])
+            _ = try Game.Board(pieces: [.one: ["00", "01", "02", "03", "04"]])
+        }
+    }
+
+    @Test("rejects two players on one field")
+    func sharedField() {
+        #expect(throws: GameError.self) {
+            _ = try Game.Board(pieces: [.one: ["05"], .two: ["05"]])
         }
     }
 }
@@ -40,7 +47,7 @@ struct AddingPiece {
 
     @Test("adds a piece to an empty field")
     func addPiece() throws {
-        var board = try Game.Board(pieces: ["05": .one])
+        var board = try Game.Board(pieces: [.one: ["05"]])
 
         try board.add(pieceFor: .two, at: "06")
 
@@ -50,7 +57,7 @@ struct AddingPiece {
     @Test("rejects adding a piece to an occupied field")
     func occupiedField() {
         #expect(throws: GameError.self) {
-            var board = try Game.Board(pieces: ["05": .one])
+            var board = try Game.Board(pieces: [.one: ["05"]])
 
             try board.add(pieceFor: .two, at: "05")
         }
@@ -58,7 +65,7 @@ struct AddingPiece {
 
     @Test("stays unchanged when adding a piece fails")
     func failedAdd() throws {
-        var board = try Game.Board(pieces: ["05": .one])
+        var board = try Game.Board(pieces: [.one: ["05"]])
 
         try? board.add(pieceFor: .two, at: "05")
 
@@ -71,7 +78,7 @@ struct MovingPiece {
 
     @Test("moves a piece to an empty field")
     func movePiece() throws {
-        var board = try Game.Board(pieces: ["05": .one])
+        var board = try Game.Board(pieces: [.one: ["05"]])
 
         try board.move(from: "05", to: "08")
 
@@ -82,7 +89,7 @@ struct MovingPiece {
     @Test("rejects moving from an empty field")
     func emptyField() {
         #expect(throws: GameError.self) {
-            var board = try Game.Board(pieces: ["05": .one])
+            var board = try Game.Board(pieces: [.one: ["05"]])
 
             try board.move(from: "06", to: "08")
         }
@@ -91,7 +98,7 @@ struct MovingPiece {
     @Test("rejects moving to an occupied field")
     func occupiedField() {
         #expect(throws: GameError.self) {
-            var board = try Game.Board(pieces: ["05": .one, "08": .two])
+            var board = try Game.Board(pieces: [.one: ["05"], .two: ["08"]])
 
             try board.move(from: "05", to: "08")
         }

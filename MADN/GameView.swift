@@ -203,36 +203,32 @@ struct UnstyledButtonStyle: ButtonStyle {
 
 import MADNCore
 
+private typealias PiecePositions = [Game.Player: [String]]
+
 #Preview {
     GameView()
 }
 
 #Preview("Mixed board") {
-    let pieces: [Game.Field: Game.Player] = Dictionary(uniqueKeysWithValues:
-        zip(Game.Player.allCases, [
-            ["0A", "0a", "00", "09"],
-            ["1A", "1a", "11", "19"],
-            ["2A", "2a", "22", "29"],
-            ["3A", "3a", "33", "39"],
-        ]).flatMap { player, labels in
-            labels.map { (Game.Field($0)!, player) }
-        }
-    )
+    let labels: PiecePositions = [
+        .one:   ["0A", "0a", "00", "09"],
+        .two:   ["1A", "1a", "11", "19"],
+        .three: ["2A", "2a", "22", "29"],
+        .four:  ["3A", "3a", "33", "39"],
+    ]
+    let pieces = labels.mapValues { Set($0.map { Game.Field($0)! }) }
 
     Board(game: GameViewModel(game: try! Game(pieces: pieces)))
 }
 
 #Preview("Finished player") {
-    let pieces: [Game.Field: Game.Player] = Dictionary(uniqueKeysWithValues:
-        zip(Game.Player.allCases, [
-            ["0A", "0a", "00", "09"],
-            ["1a", "1b", "1c", "1d"],
-            ["2A", "2a", "22", "29"],
-            ["3A", "3a", "33", "39"],
-        ]).flatMap { player, labels in
-            labels.map { (Game.Field($0)!, player) }
-        }
-    )
+    let labels: PiecePositions = [
+        .one:   ["0A", "0a", "00", "09"],
+        .two:   ["1a", "1b", "1c", "1d"],
+        .three: ["2A", "2a", "22", "29"],
+        .four:  ["3A", "3a", "33", "39"],
+    ]
+    let pieces = labels.mapValues { Set($0.map { Game.Field($0)! }) }
 
-    Board(game: GameViewModel(game: try! Game(pieces: pieces, player: .two)))
+    Board(game: GameViewModel(game: try! Game(pieces: pieces, player: .one)))
 }
