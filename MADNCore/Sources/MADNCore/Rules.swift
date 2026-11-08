@@ -4,8 +4,12 @@ extension Game {
 
     enum Rules {
 
-        static func initialPieces(for players: Set<Player>) -> PiecePositions {
-            Dictionary(uniqueKeysWithValues: players.map { ($0, Set($0.outFields)) })
+        static func initialPieces(for players: Set<Player>) throws -> PiecePositions {
+            guard players.count >= 2 else {
+                throw GameError(message: "A game needs at least 2 players")
+            }
+
+            return Dictionary(uniqueKeysWithValues: players.map { ($0, Set($0.outFields)) })
         }
 
         static func possibleMoves(in state: State) throws -> [Move] {

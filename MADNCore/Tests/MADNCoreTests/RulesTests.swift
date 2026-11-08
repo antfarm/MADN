@@ -14,6 +14,13 @@ struct NewGame {
         #expect(Game.Player.four.outFields.allSatisfy { game.player(at: $0) == nil })
     }
 
+    @Test("needs at least 2 players", arguments: [[], [.one]] as [Set<Game.Player>])
+    func tooFewPlayers(players: Set<Game.Player>) {
+        #expect(throws: GameError.self) {
+            _ = try Game(players: players)
+        }
+    }
+
     @Test("starts with each player's pieces on their out fields", arguments: Game.Player.allCases)
     func initialPieces(player: Game.Player) throws {
         let game = try Game()
