@@ -154,5 +154,5 @@ private enum BoardLayout {
         return nil
     }
 
-    static let trackCells = Game.Field.trackFields.compactMap(cell(of:))
+    static let trackCells = Game.Field.trackFields.compactMap { cell(of: $0) }
 }
