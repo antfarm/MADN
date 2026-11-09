@@ -32,6 +32,17 @@ struct GameView: View {
             }
         case .playing:
             Board(game: game)
+                .disabled(game.hasPlayerFinished)
+                .overlay {
+                    if game.hasPlayerFinished {
+                        if game.canContinue {
+                            Dialog(title: "New Game?", buttons: [("OK", { step = .selectPlayers }), ("Continue", { game.continueGame() })]) {}
+                        }
+                        else {
+                            Dialog(title: "New Game?", buttons: [("OK", { step = .selectPlayers })]) {}
+                        }
+                    }
+                }
         }
     }
 }
@@ -220,6 +231,32 @@ struct Die: View {
     }
 }
 
+struct Dialog<Content: View>: View {
+    let title: String
+    let buttons: [(title: String, action: () -> Void)]
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Text(title)
+                .font(.title)
+
+            content
+
+            HStack(spacing: 24) {
+                ForEach(buttons.indices, id: \.self) { index in
+                    Button(buttons[index].title, action: buttons[index].action)
+                        .font(.title)
+                        .buttonStyle(.borderedProminent)
+                }
+            }
+        }
+        .frame(minWidth: 320)
+        .padding(32)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
+    }
+}
+
 struct PlayerDialog: View {
     let title: String
     let buttonTitle: String
@@ -233,23 +270,14 @@ struct PlayerDialog: View {
     let onOK: (Set<Game.Player>) -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            Text(title)
-                .font(.title)
-
+        Dialog(title: title, buttons: [(buttonTitle, { onOK(selected) })]) {
             HStack {
                 ForEach(players, id: \.self) { player in
                     PieceButton(color: color(player), isSelected: selected.contains(player), onTap: { tap(player) })
                         .frame(width: 100, height: 100)
                 }
             }
-
-            Button(buttonTitle) { onOK(selected) }
-                .font(.title)
-                .buttonStyle(.borderedProminent)
         }
-        .padding(32)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 24))
     }
 
     private func tap(_ player: Game.Player) {
@@ -336,4 +364,12 @@ private typealias PiecePositions = [Game.Player: [String]]
     let game = GameViewModel()
 
     PlayerDialog(title: "Who starts?", buttonTitle: "OK", players: [.one, .three, .four], color: game.color(for:), minCount: 1, maxCount: 1, selected: [.one]) { _ in }
+}
+
+#Preview("Player finished") {
+    Dialog(title: "New Game?", buttons: [("OK", {}), ("Continue", {})]) {}
+}
+
+#Preview("Game over") {
+    Dialog(title: "New Game?", buttons: [("OK", {})]) {}
 }

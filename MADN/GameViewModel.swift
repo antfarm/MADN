@@ -16,6 +16,10 @@ final class GameViewModel {
 
     var die: Int? { game.die?.rawValue }
 
+    private(set) var hasPlayerFinished = false
+
+    var canContinue: Bool { game.activePlayers.count >= 2 }
+
     func player(at field: Game.Field) -> Game.Player? {
         game.player(at: field)
     }
@@ -30,6 +34,11 @@ final class GameViewModel {
 
     func start(players: Set<Game.Player>, player: Game.Player) {
         game = try! Game(players: players, player: player)
+        hasPlayerFinished = false
+    }
+
+    func continueGame() {
+        hasPlayerFinished = false
     }
 
     func roll() {
@@ -48,7 +57,15 @@ final class GameViewModel {
     }
 
     func move(field: Game.Field) {
-        do { try game.move(field: field) } catch { print(error) }
+        let movingPlayer = game.player
+
+        do {
+            try game.move(field: field)
+
+            if !game.activePlayers.contains(movingPlayer) { hasPlayerFinished = true }
+        } catch {
+            print(error)
+        }
     }
 
     // Board grid layout
