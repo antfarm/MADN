@@ -1,6 +1,6 @@
 extension Game {
 
-    struct State {
+    struct State: Codable {
         var board: Board
         let players: Set<Player>
         var player: Player
@@ -19,7 +19,7 @@ extension Game {
         }
     }
 
-    public enum Player: Int, CaseIterable, Sendable {
+    public enum Player: Int, CaseIterable, Sendable, Codable {
         case one, two, three, four
 
         var next: Player {
@@ -27,7 +27,7 @@ extension Game {
         }
     }
 
-    public enum DieValue: Int, CaseIterable, Sendable {
+    public enum DieValue: Int, CaseIterable, Sendable, Codable {
         case one = 1, two, three, four, five, six
 
         public static func random() -> DieValue {

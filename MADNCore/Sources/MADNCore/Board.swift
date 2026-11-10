@@ -1,6 +1,6 @@
 extension Game {
 
-    struct Board {
+    struct Board: Codable {
         private var pieces: [Field: Player] = [:]
 
         init(pieces: PiecePositions) throws {
@@ -50,7 +50,7 @@ extension Game {
 
     public typealias PiecePositions = [Player: Set<Field>]
 
-    public enum Field: Hashable, CaseIterable, Sendable {
+    public enum Field: Hashable, CaseIterable, Sendable, Codable {
         case track(Player, Track.Field)
         case home(Player, Home.Field)
         case out(Player, Out.Field)
@@ -100,7 +100,7 @@ extension Game {
     }
 
     public enum Out {
-        public enum Field: String, CaseIterable, Sendable {
+        public enum Field: String, CaseIterable, Sendable, Codable {
             case A, B, C, D
         }
     }
@@ -108,7 +108,7 @@ extension Game {
     public enum Track {
         static let sectorLength = 10
 
-        public struct Field: Hashable, CaseIterable, Sendable {
+        public struct Field: Hashable, CaseIterable, Sendable, Codable {
             let index: Int
 
             init?(index: Int) {
@@ -123,7 +123,7 @@ extension Game {
     }
 
     public enum Home {
-        public enum Field: String, CaseIterable, Sendable {
+        public enum Field: String, CaseIterable, Sendable, Codable {
             case a, b, c, d
         }
     }

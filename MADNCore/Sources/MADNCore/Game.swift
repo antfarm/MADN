@@ -1,4 +1,4 @@
-public struct Game {
+public struct Game: Codable {
 
     var state: State
 

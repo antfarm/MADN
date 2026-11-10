@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import MADNCore
 
@@ -48,5 +49,26 @@ struct NewGame {
         try game.roll()
 
         #expect(try (1...6).contains(#require(game.die).rawValue))
+    }
+}
+
+@Suite("A game")
+struct SavedGame {
+
+    @Test("can be serialized and deserialized")
+    func serialization() throws {
+        var game = try Game(pieces: [.one: ["05"], .three: ["2A"]], player: .three)
+        try game.roll(.three)
+        try game.pass() // first of three tries
+        try game.roll(.two)
+
+        let serializedGame = try JSONEncoder().encode(game)
+        let deserializedGame = try JSONDecoder().decode(Game.self, from: serializedGame)
+
+        #expect(Field.allCases.map(deserializedGame.player(at:)) == Field.allCases.map(game.player(at:)))
+        #expect(deserializedGame.state.players == [.one, .three])
+        #expect(deserializedGame.player == .three)
+        #expect(deserializedGame.die == .two)
+        #expect(deserializedGame.state.extraRolls == 1)
     }
 }
