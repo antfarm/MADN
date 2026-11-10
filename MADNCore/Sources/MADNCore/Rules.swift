@@ -6,14 +6,14 @@ extension Game {
 
         static func initialPieces(for players: Set<Player>) throws -> PiecePositions {
             guard players.count >= 2 else {
-                throw GameError(message: "A game needs at least 2 players")
+                throw GameError.tooFewPlayers
             }
 
             return Dictionary(uniqueKeysWithValues: players.map { ($0, Set($0.outFields)) })
         }
 
         static func possibleMoves(in state: State) throws -> [Move] {
-            guard let die = state.die else { throw GameError(message: "Die not rolled") }
+            guard let die = state.die else { throw GameError.dieNotRolled }
 
             let moves: [Move] = state.board.pieces(for: state.player).compactMap { field in
                 if field.isOut {
@@ -55,7 +55,7 @@ extension Game {
 
         static func roll(_ die: DieValue, in state: State) throws -> State {
             guard state.die == nil else {
-                throw GameError(message: "Die already rolled")
+                throw GameError.dieAlreadyRolled
             }
 
             var next = state
@@ -65,7 +65,7 @@ extension Game {
 
         static func move(field: Field, in state: State) throws -> State {
             guard let target = try possibleMoves(in: state).first(where: { $0.from == field })?.to else {
-                throw GameError(message: "\(field) cannot move")
+                throw GameError.cannotMove(field)
             }
 
             var next = state
@@ -83,7 +83,7 @@ extension Game {
 
         static func pass(in state: State) throws -> State {
             guard try possibleMoves(in: state).isEmpty else {
-                throw GameError(message: "A move is possible")
+                throw GameError.movePossible
             }
 
             var next = state

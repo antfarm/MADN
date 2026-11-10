@@ -16,14 +16,14 @@ struct NewGame {
 
     @Test("needs at least 2 players", arguments: [[], [.one]] as [Set<Player>])
     func tooFewPlayers(players: Set<Player>) {
-        #expect(throws: GameError.self) {
+        #expect(throws: GameError.tooFewPlayers) {
             _ = try Game(players: players)
         }
     }
 
     @Test("the starting player must be in the game")
     func startingPlayerNotInGame() {
-        #expect(throws: GameError.self) {
+        #expect(throws: GameError.startingPlayerNotInGame) {
             _ = try Game(players: [.one, .two], player: .three)
         }
     }

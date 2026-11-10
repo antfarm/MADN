@@ -9,7 +9,7 @@ extension Game {
 
         init(pieces: PiecePositions, player: Player, die: DieValue? = nil) throws {
             guard pieces[player] != nil else {
-                throw GameError(message: "Starting player must be one of the players")
+                throw GameError.startingPlayerNotInGame
             }
 
             self.board = try Board(pieces: pieces)

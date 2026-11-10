@@ -7,7 +7,7 @@ struct NewBoard {
 
     @Test("rejects a piece on another player's home or out field", arguments: ["1a", "1A"] as [Field])
     func wrongPlayer(field: Field) {
-        #expect(throws: GameError.self) {
+        #expect(throws: GameError.wrongField(.one, field)) {
             _ = try Board(pieces: [.one: [field]])
         }
     }
@@ -21,14 +21,14 @@ struct NewBoard {
 
     @Test("rejects more than 4 pieces per player")
     func fivePieces() {
-        #expect(throws: GameError.self) {
+        #expect(throws: GameError.tooManyPieces(.one)) {
             _ = try Board(pieces: [.one: ["00", "01", "02", "03", "04"]])
         }
     }
 
     @Test("rejects two players on one field")
     func sharedField() {
-        #expect(throws: GameError.self) {
+        #expect(throws: GameError.fieldOccupied("05")) {
             _ = try Board(pieces: [.one: ["05"], .two: ["05"]])
         }
     }
@@ -48,7 +48,7 @@ struct AddingPiece {
 
     @Test("rejects adding a piece to an occupied field")
     func occupiedField() {
-        #expect(throws: GameError.self) {
+        #expect(throws: GameError.fieldOccupied("05")) {
             var board = try Board(pieces: [.one: ["05"]])
 
             try board.add(pieceFor: .two, at: "05")
@@ -80,7 +80,7 @@ struct MovingPiece {
 
     @Test("rejects moving from an empty field")
     func emptyField() {
-        #expect(throws: GameError.self) {
+        #expect(throws: GameError.noPiece("06")) {
             var board = try Board(pieces: [.one: ["05"]])
 
             try board.move(from: "06", to: "08")
@@ -89,7 +89,7 @@ struct MovingPiece {
 
     @Test("rejects moving to an occupied field")
     func occupiedField() {
-        #expect(throws: GameError.self) {
+        #expect(throws: GameError.fieldOccupied("08")) {
             var board = try Board(pieces: [.one: ["05"], .two: ["08"]])
 
             try board.move(from: "05", to: "08")
@@ -152,7 +152,7 @@ struct Path {
 
     @Test("does not contain another player's home row")
     func fieldNotOnPath() {
-        #expect(throws: GameError.self) {
+        #expect(throws: GameError.fieldNotOnPath) {
             _ = try Player.one.stepsTravelled(to: "1a")
         }
     }

@@ -24,15 +24,15 @@ extension Game {
 
         mutating func add(pieceFor player: Player, at field: Field) throws {
             guard pieces[field] == nil else {
-                throw GameError(message: "\(field) is occupied")
+                throw GameError.fieldOccupied(field)
             }
 
             guard field.isTrack || field.owner == player else {
-                throw GameError(message: "Player \(player.rawValue) cannot be on \(field)")
+                throw GameError.wrongField(player, field)
             }
 
             guard pieces(for: player).count < player.outFields.count else {
-                throw GameError(message: "Player \(player.rawValue) has too many pieces")
+                throw GameError.tooManyPieces(player)
             }
 
             pieces[field] = player
@@ -40,7 +40,7 @@ extension Game {
 
         mutating func move(from field: Field, to target: Field) throws {
             guard let player = pieces[field] else {
-                throw GameError(message: "No piece on \(field)")
+                throw GameError.noPiece(field)
             }
 
             pieces[field] = nil
@@ -141,7 +141,7 @@ extension Game.Player {
 
     func stepsTravelled(to field: Game.Field) throws -> Int {
         guard let steps = path.firstIndex(of: field) else {
-            throw GameError(message: "Field not on player's path")
+            throw GameError.fieldNotOnPath
         }
 
         return steps

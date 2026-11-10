@@ -81,7 +81,7 @@ struct Turn {
     func noPassWithMove() throws {
         let state = try State(pieces: [.one: ["05"]]).rolled(.three)
 
-        #expect(throws: GameError.self) { try state.passed() }
+        #expect(throws: GameError.movePossible) { try state.passed() }
     }
 
     @Test("passing advances the turn when no move is possible")
@@ -274,7 +274,7 @@ struct PossibleMoves {
     func notRolled() throws {
         let state = try State(pieces: [.one: ["05"]])
 
-        #expect(throws: GameError.self) { try Rules.possibleMoves(in: state) }
+        #expect(throws: GameError.dieNotRolled) { try Rules.possibleMoves(in: state) }
     }
 
     @Test("lists no moves for another player's pieces")

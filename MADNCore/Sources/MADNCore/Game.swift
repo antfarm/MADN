@@ -43,6 +43,32 @@ public struct Game {
     }
 }
 
-public struct GameError: Error {
-    public let message: String
+public enum GameError: Error, Equatable, CustomStringConvertible {
+    case tooFewPlayers
+    case startingPlayerNotInGame
+    case fieldOccupied(Game.Field)
+    case wrongField(Game.Player, Game.Field)
+    case tooManyPieces(Game.Player)
+    case noPiece(Game.Field)
+    case fieldNotOnPath
+    case dieNotRolled
+    case dieAlreadyRolled
+    case cannotMove(Game.Field)
+    case movePossible
+
+    public var description: String {
+        switch self {
+        case .tooFewPlayers: "A game needs at least 2 players"
+        case .startingPlayerNotInGame: "Starting player must be one of the players"
+        case .fieldOccupied(let field): "\(field) is occupied"
+        case .wrongField(let player, let field): "Player \(player.rawValue) cannot be on \(field)"
+        case .tooManyPieces(let player): "Player \(player.rawValue) has too many pieces"
+        case .noPiece(let field): "No piece on \(field)"
+        case .fieldNotOnPath: "Field not on player's path"
+        case .dieNotRolled: "Die not rolled"
+        case .dieAlreadyRolled: "Die already rolled"
+        case .cannotMove(let field): "\(field) cannot move"
+        case .movePossible: "A move is possible"
+        }
+    }
 }
