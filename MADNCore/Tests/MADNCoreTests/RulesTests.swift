@@ -24,14 +24,14 @@ struct Turn {
 
     @Test("players are derived from the initial pieces")
     func playersFromPieces() throws {
-        let state = try State(pieces: [.one: ["05"], .three: ["15"]])
+        let state = try State(pieces: [.one: ["05"], .three: ["15"]], player: .one)
 
         #expect(state.players == [.one, .three])
     }
 
     @Test("the turn advances to the next player")
     func advancesToNextPlayer() throws {
-        let state = try State(pieces: [.one: ["05"], .three: ["15"]])
+        let state = try State(pieces: [.one: ["05"], .three: ["15"]], player: .one)
             .rolled(.one)
             .moved("05")
 
@@ -40,7 +40,7 @@ struct Turn {
 
     @Test("a single player keeps the turn")
     func singlePlayerKeepsTurn() throws {
-        let state = try State(pieces: [.one: ["05"]])
+        let state = try State(pieces: [.one: ["05"]], player: .one)
             .rolled(.one)
             .moved("05")
 
@@ -49,7 +49,7 @@ struct Turn {
 
     @Test("a player with all 4 pieces in their home row no longer gets the turn")
     func finishedPlayerGetsNoTurn() throws {
-        let state = try State(pieces: [.one: ["05"], .two: ["1a", "1b", "1c", "1d"], .three: ["25"]])
+        let state = try State(pieces: [.one: ["05"], .two: ["1a", "1b", "1c", "1d"], .three: ["25"]], player: .one)
             .rolled(.one)
             .moved("05")
 
@@ -58,14 +58,14 @@ struct Turn {
 
     @Test("a finished player is no longer among the active players")
     func activePlayers() throws {
-        let state = try State(pieces: [.one: ["0a", "0b", "0c", "0d"], .two: ["05"]])
+        let state = try State(pieces: [.one: ["0a", "0b", "0c", "0d"], .two: ["05"]], player: .one)
 
         #expect(Rules.activePlayers(in: state) == [.two])
     }
 
     @Test("a player who finishes with a 6 does not roll again")
     func finishWithSix() throws {
-        let state = try State(pieces: [.one: ["0b", "0c", "0d", "34"], .two: ["15"], .three: ["25"]])
+        let state = try State(pieces: [.one: ["0b", "0c", "0d", "34"], .two: ["15"], .three: ["25"]], player: .one)
             .rolled(.six)
             .moved("34")
 
@@ -79,14 +79,14 @@ struct Turn {
 
     @Test("cannot pass while a move is possible")
     func noPassWithMove() throws {
-        let state = try State(pieces: [.one: ["05"]]).rolled(.three)
+        let state = try State(pieces: [.one: ["05"]], player: .one).rolled(.three)
 
         #expect(throws: GameError.movePossible) { try state.passed() }
     }
 
     @Test("passing advances the turn when no move is possible")
     func passWithoutMove() throws {
-        let state = try State(pieces: [.one: ["0d"], .two: []])
+        let state = try State(pieces: [.one: ["0d"], .two: []], player: .one)
             .rolled(.one)
             .passed()
 
@@ -95,7 +95,7 @@ struct Turn {
 
     @Test("a 6 that cannot be used still lets the player roll again")
     func passAfterSix() throws {
-        let state = try State(pieces: [.one: ["0d"]])
+        let state = try State(pieces: [.one: ["0d"]], player: .one)
             .rolled(.six)
             .passed()
 
@@ -105,7 +105,7 @@ struct Turn {
 
     @Test("passing lets the player roll again when bringing in is the only possible move")
     func passOnlyBringIn() throws {
-        let state = try State(pieces: [.one: ["0A"]])
+        let state = try State(pieces: [.one: ["0A"]], player: .one)
             .rolled(.three)
             .passed()
 
@@ -115,7 +115,7 @@ struct Turn {
 
     @Test("passing advances the turn when a piece could move with another roll")
     func passWithBlockedPiece() throws {
-        let state = try State(pieces: [.one: ["0A", "39"], .two: []])
+        let state = try State(pieces: [.one: ["0A", "39"], .two: []], player: .one)
             .rolled(.five)
             .passed()
 
@@ -124,7 +124,7 @@ struct Turn {
 
     @Test("passing advances the turn after three tries without a 6")
     func passAfterThreeTries() throws {
-        let state = try State(pieces: [.one: ["0A"], .two: []])
+        let state = try State(pieces: [.one: ["0A"], .two: []], player: .one)
             .rolled(.one).passed()
             .rolled(.two).passed()
             .rolled(.three).passed()
@@ -136,7 +136,7 @@ struct Turn {
 @Suite("A piece on an out field")
 struct OutField {
 
-    let state = try! State(pieces: [.one: ["0A"]])
+    let state = try! State(pieces: [.one: ["0A"]], player: .one)
 
     @Test("can only move with a 6", arguments: DieValue.allCases)
     func onlyWithSix(die: DieValue) throws {
@@ -156,7 +156,7 @@ struct OutField {
 
     @Test("must move in with a 6")
     func mustMoveIn() throws {
-        let state = try State(pieces: [.one: ["0A", "05"]]).rolled(.six)
+        let state = try State(pieces: [.one: ["0A", "05"]], player: .one).rolled(.six)
 
         #expect(try Rules.possibleMoves(in: state).map(\.from) == ["0A"])
     }
@@ -190,14 +190,14 @@ struct TrackField {
 
     @Test("can move to a field occupied by an opponent's piece")
     func targetOpponent() throws {
-        let state = try State(pieces: [.one: ["05"], .two: ["08"]]).rolled(.three)
+        let state = try State(pieces: [.one: ["05"], .two: ["08"]], player: .one).rolled(.three)
 
         #expect(try Rules.possibleMoves(in: state).contains { $0.from == "05" && $0.to == "08" })
     }
 
     @Test("captures an opponent's piece when landing on it")
     func captures() throws {
-        let state = try State(pieces: [.one: ["05"], .two: ["08"]])
+        let state = try State(pieces: [.one: ["05"], .two: ["08"]], player: .one)
             .rolled(.three)
             .moved("05")
 
@@ -206,7 +206,7 @@ struct TrackField {
 
     @Test("moves to its player's out area when captured")
     func captured() throws {
-        let state = try State(pieces: [.one: ["05"], .two: ["08"]])
+        let state = try State(pieces: [.one: ["05"], .two: ["08"]], player: .one)
             .rolled(.three)
             .moved("05")
 
@@ -215,35 +215,35 @@ struct TrackField {
 
     @Test("cannot move to a field occupied by an own piece")
     func targetOwn() throws {
-        let state = try State(pieces: [.one: ["05", "08"]]).rolled(.three)
+        let state = try State(pieces: [.one: ["05", "08"]], player: .one).rolled(.three)
 
         #expect(try !Rules.possibleMoves(in: state).contains { $0.from == "05" })
     }
 
     @Test("cannot move past the end of its home row")
     func pastHomeRow() throws {
-        let state = try State(pieces: [.one: ["39"]]).rolled(.six)
+        let state = try State(pieces: [.one: ["39"]], player: .one).rolled(.six)
 
         #expect(try !Rules.possibleMoves(in: state).contains { $0.from == "39" })
     }
 
     @Test("cannot pass a piece in the home row")
     func passInHomeRow() throws {
-        let state = try State(pieces: [.one: ["38", "0a"]]).rolled(.five)
+        let state = try State(pieces: [.one: ["38", "0a"]], player: .one).rolled(.five)
 
         #expect(try !Rules.possibleMoves(in: state).contains { $0.from == "38" })
     }
 
     @Test("must leave its start field while pieces are staged")
     func mustLeaveStart() throws {
-        let state = try State(pieces: [.one: ["0A", "00", "05"]]).rolled(.three)
+        let state = try State(pieces: [.one: ["0A", "00", "05"]], player: .one).rolled(.three)
 
         #expect(try Rules.possibleMoves(in: state).map(\.from) == ["00"])
     }
 
     @Test("must capture an opponent's piece when possible")
     func mustCapture() throws {
-        let state = try State(pieces: [.one: ["05", "15"], .two: ["08"]]).rolled(.three)
+        let state = try State(pieces: [.one: ["05", "15"], .two: ["08"]], player: .one).rolled(.three)
 
         #expect(try Rules.possibleMoves(in: state).map(\.from) == ["05"])
     }
@@ -254,14 +254,14 @@ struct HomeField {
 
     @Test("moves to its target field")
     func movesToTarget() throws {
-        let state = try State(pieces: [.one: ["0a"]]).rolled(.two)
+        let state = try State(pieces: [.one: ["0a"]], player: .one).rolled(.two)
 
         #expect(try Rules.possibleMoves(in: state).contains { $0.from == "0a" && $0.to == "0c" })
     }
 
     @Test("cannot pass a piece in the home row")
     func passInHomeRow() throws {
-        let state = try State(pieces: [.one: ["0a", "0b"]]).rolled(.two)
+        let state = try State(pieces: [.one: ["0a", "0b"]], player: .one).rolled(.two)
 
         #expect(try !Rules.possibleMoves(in: state).contains { $0.from == "0a" })
     }
@@ -272,14 +272,14 @@ struct PossibleMoves {
 
     @Test("rejects asking before the die is rolled")
     func notRolled() throws {
-        let state = try State(pieces: [.one: ["05"]])
+        let state = try State(pieces: [.one: ["05"]], player: .one)
 
         #expect(throws: GameError.dieNotRolled) { try Rules.possibleMoves(in: state) }
     }
 
     @Test("lists no moves for another player's pieces")
     func otherPlayer() throws {
-        let state = try State(pieces: [.one: ["05"], .two: ["15"]]).rolled(.three)
+        let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one).rolled(.three)
 
         #expect(try !Rules.possibleMoves(in: state).contains { $0.from == "15" })
     }

@@ -17,10 +17,6 @@ extension Field: ExpressibleByStringLiteral {
 
 extension State {
 
-    init(pieces: PiecePositions) throws {
-        try self.init(pieces: pieces, player: .one)
-    }
-
     func adding(_ pieces: PiecePositions) throws -> State {
         var state = self
 
