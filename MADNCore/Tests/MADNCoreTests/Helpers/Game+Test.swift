@@ -1,41 +1,47 @@
 @testable import MADNCore
 
-extension Game.Field: ExpressibleByStringLiteral {
+typealias Board = Game.Board
+typealias DieValue = Game.DieValue
+typealias Field = Game.Field
+typealias PiecePositions = Game.PiecePositions
+typealias Player = Game.Player
+typealias Rules = Game.Rules
+typealias State = Game.State
+
+extension Field: ExpressibleByStringLiteral {
 
     public init(stringLiteral value: String) {
-        self = Game.Field(value)!
+        self = Field(value)!
     }
 }
 
-extension Game {
+extension State {
 
-    func adding(_ pieces: PiecePositions) throws -> Game {
-        var game = self
+    init(pieces: PiecePositions) throws {
+        try self.init(pieces: pieces, player: .one)
+    }
+
+    func adding(_ pieces: PiecePositions) throws -> State {
+        var state = self
 
         for (player, fields) in pieces {
             for field in fields {
-                try game.state.board.add(pieceFor: player, at: field)
+                try state.board.add(pieceFor: player, at: field)
             }
         }
 
-        return game
+        return state
     }
 
-    func rolled(_ die: DieValue) -> Game {
-        var game = self
-        try! game.roll(die)
-        return game
+    func rolled(_ die: DieValue) -> State {
+        try! Rules.roll(die, in: self)
     }
 
-    func moved(_ field: Field) throws -> Game {
-        var game = self
-        try game.move(field: field)
-        return game
+    func moved(_ field: Field) throws -> State {
+        try Rules.move(field: field, in: self)
     }
 
-    func passed() throws -> Game {
-        var game = self
-        try game.pass()
-        return game
+    func passed() throws -> State {
+        try Rules.pass(in: self)
     }
 }

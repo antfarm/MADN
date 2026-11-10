@@ -5,16 +5,16 @@ import Testing
 @Suite("A new board")
 struct NewBoard {
 
-    @Test("rejects a piece on another player's home or out field", arguments: ["1a", "1A"] as [Game.Field])
-    func wrongPlayer(field: Game.Field) {
+    @Test("rejects a piece on another player's home or out field", arguments: ["1a", "1A"] as [Field])
+    func wrongPlayer(field: Field) {
         #expect(throws: GameError.self) {
-            _ = try Game.Board(pieces: [.one: [field]])
+            _ = try Board(pieces: [.one: [field]])
         }
     }
 
     @Test("allows 4 pieces per player")
     func fourPieces() throws {
-        let board = try Game.Board(pieces: [.one: ["00", "01", "02", "03"]])
+        let board = try Board(pieces: [.one: ["00", "01", "02", "03"]])
 
         #expect(board.pieces(for: .one).count == 4)
     }
@@ -22,14 +22,14 @@ struct NewBoard {
     @Test("rejects more than 4 pieces per player")
     func fivePieces() {
         #expect(throws: GameError.self) {
-            _ = try Game.Board(pieces: [.one: ["00", "01", "02", "03", "04"]])
+            _ = try Board(pieces: [.one: ["00", "01", "02", "03", "04"]])
         }
     }
 
     @Test("rejects two players on one field")
     func sharedField() {
         #expect(throws: GameError.self) {
-            _ = try Game.Board(pieces: [.one: ["05"], .two: ["05"]])
+            _ = try Board(pieces: [.one: ["05"], .two: ["05"]])
         }
     }
 }
@@ -39,7 +39,7 @@ struct AddingPiece {
 
     @Test("adds a piece to an empty field")
     func addPiece() throws {
-        var board = try Game.Board(pieces: [.one: ["05"]])
+        var board = try Board(pieces: [.one: ["05"]])
 
         try board.add(pieceFor: .two, at: "06")
 
@@ -49,7 +49,7 @@ struct AddingPiece {
     @Test("rejects adding a piece to an occupied field")
     func occupiedField() {
         #expect(throws: GameError.self) {
-            var board = try Game.Board(pieces: [.one: ["05"]])
+            var board = try Board(pieces: [.one: ["05"]])
 
             try board.add(pieceFor: .two, at: "05")
         }
@@ -57,7 +57,7 @@ struct AddingPiece {
 
     @Test("stays unchanged when adding a piece fails")
     func failedAdd() throws {
-        var board = try Game.Board(pieces: [.one: ["05"]])
+        var board = try Board(pieces: [.one: ["05"]])
 
         try? board.add(pieceFor: .two, at: "05")
 
@@ -70,7 +70,7 @@ struct MovingPiece {
 
     @Test("moves a piece to an empty field")
     func movePiece() throws {
-        var board = try Game.Board(pieces: [.one: ["05"]])
+        var board = try Board(pieces: [.one: ["05"]])
 
         try board.move(from: "05", to: "08")
 
@@ -81,7 +81,7 @@ struct MovingPiece {
     @Test("rejects moving from an empty field")
     func emptyField() {
         #expect(throws: GameError.self) {
-            var board = try Game.Board(pieces: [.one: ["05"]])
+            var board = try Board(pieces: [.one: ["05"]])
 
             try board.move(from: "06", to: "08")
         }
@@ -90,7 +90,7 @@ struct MovingPiece {
     @Test("rejects moving to an occupied field")
     func occupiedField() {
         #expect(throws: GameError.self) {
-            var board = try Game.Board(pieces: [.one: ["05"], .two: ["08"]])
+            var board = try Board(pieces: [.one: ["05"], .two: ["08"]])
 
             try board.move(from: "05", to: "08")
         }
@@ -104,38 +104,38 @@ struct Fields {
     func trackFieldOrder() {
         let labels = (0...39).map { String(format: "%02d", $0) }
 
-        #expect(Game.Field.trackFields.map(\.description) == labels)
+        #expect(Field.trackFields.map(\.description) == labels)
     }
 
-    @Test("every field survives converting to a label and back", arguments: Game.Field.allCases)
-    func labelRoundTrip(field: Game.Field) {
-        #expect(Game.Field(field.description) == field)
+    @Test("every field survives converting to a label and back", arguments: Field.allCases)
+    func labelRoundTrip(field: Field) {
+        #expect(Field(field.description) == field)
     }
 
     @Test("rejects invalid labels", arguments: ["", "0", "000", "40", "4A", "0e", "0E", "xx"])
     func invalidLabel(label: String) {
-        #expect(Game.Field(label) == nil)
+        #expect(Field(label) == nil)
     }
 
     @Test("a track field only has an owner if it's a start field")
     func trackFieldOwner() {
-        #expect(("10" as Game.Field).owner == .two)
-        #expect(("11" as Game.Field).owner == nil)
+        #expect(("10" as Field).owner == .two)
+        #expect(("11" as Field).owner == nil)
     }
 
     @Test("the start fields are 10 fields apart")
     func startFields() {
-        #expect(Game.Player.allCases.map(\.startField) == ["00", "10", "20", "30"])
+        #expect(Player.allCases.map(\.startField) == ["00", "10", "20", "30"])
     }
 
     @Test("there are 72 fields, without duplicates")
     func allFields() {
-        #expect(Game.Field.allCases.count == 72)
-        #expect(Set(Game.Field.allCases).count == 72)
+        #expect(Field.allCases.count == 72)
+        #expect(Set(Field.allCases).count == 72)
     }
 
-    @Test("home and out fields are owned by their player", arguments: ["1a", "1A"] as [Game.Field])
-    func homeAndOutFieldOwner(field: Game.Field) {
+    @Test("home and out fields are owned by their player", arguments: ["1a", "1A"] as [Field])
+    func homeAndOutFieldOwner(field: Field) {
         #expect(field.owner == .two)
     }
 }
@@ -145,20 +145,20 @@ struct Path {
 
     @Test("has 44 steps, from the start field to the end of the home row")
     func path() {
-        #expect(Game.Player.two.startField == "10")
-        #expect(Game.Player.two.field(stepsTravelled: 43) == "1d")
-        #expect(Game.Player.two.field(stepsTravelled: 44) == nil)
+        #expect(Player.two.startField == "10")
+        #expect(Player.two.field(stepsTravelled: 43) == "1d")
+        #expect(Player.two.field(stepsTravelled: 44) == nil)
     }
 
     @Test("does not contain another player's home row")
     func fieldNotOnPath() {
         #expect(throws: GameError.self) {
-            _ = try Game.Player.one.stepsTravelled(to: "1a")
+            _ = try Player.one.stepsTravelled(to: "1a")
         }
     }
 
     @Test("has no field before its start")
     func negativeSteps() {
-        #expect(Game.Player.two.field(stepsTravelled: -1) == nil)
+        #expect(Player.two.field(stepsTravelled: -1) == nil)
     }
 }
