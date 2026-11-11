@@ -69,6 +69,6 @@ struct SavedGame {
         #expect(deserializedGame.state.players == [.one, .three])
         #expect(deserializedGame.player == .three)
         #expect(deserializedGame.die == .two)
-        #expect(deserializedGame.state.extraRolls == 1)
+        #expect(deserializedGame.state.extraRollsUsed == 1)
     }
 }

@@ -94,28 +94,32 @@ extension Game {
 
             let pieces = state.board.pieces(for: state.player)
 
-            if state.extraRolls < 2 // extra rolls not used up (3 tries in total)
-                && pieces.contains(where: \.isOut) // some pieces staged
-                && !pieces.contains(where: \.isTrack) { // none on the track
+            if state.extraRollsUsed < 2 // three rolls not used up
+                && pieces.contains(where: \.isOut) // staged pieces left
+                && !hasPieceInPlay(in: state) { // nothing else could move
 
-                let homePieces = pieces.filter(\.isHome)
-
-                if homePieces == Set(state.player.homeFields.suffix(homePieces.count)) { // packed at the end of the home row
-                    next.extraRolls += 1
-                    next.die = nil // roll again
-                    return next
-                }
+                next.extraRollsUsed += 1
+                next.die = nil // roll again
+                return next
             }
 
             advanceTurn(in: &next)
             return next
         }
 
+        private static func hasPieceInPlay(in state: State) -> Bool {
+            let pieces = state.board.pieces(for: state.player)
+            let homePieces = pieces.filter(\.isHome)
+
+            return pieces.contains(where: \.isTrack) // some on the track
+                || homePieces != Set(state.player.homeFields.suffix(homePieces.count)) // some in the home row can still move
+        }
+
         private static func advanceTurn(in state: inout State) {
             let shouldRollAgain = state.die == .six && activePlayers(in: state).contains(state.player)
 
             state.die = nil
-            state.extraRolls = 0
+            state.extraRollsUsed = 0
 
             if shouldRollAgain { return }
 

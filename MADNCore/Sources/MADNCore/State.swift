@@ -5,7 +5,7 @@ extension Game {
         let players: Set<Player>
         var player: Player
         var die: DieValue? = nil
-        var extraRolls = 0
+        var extraRollsUsed = 0
 
         init(pieces: PiecePositions, player: Player, die: DieValue? = nil) throws {
             guard pieces[player] != nil else {
