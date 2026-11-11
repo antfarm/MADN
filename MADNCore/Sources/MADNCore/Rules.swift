@@ -129,12 +129,11 @@ extension Game {
             state.die = nil
             state.extraRollsUsed = 0
 
-            if shouldRollAgain { return }
+            if shouldRollAgain || isGameOver(in: state) { return }
 
             let nextPlayer = state.player.next
-
-            state.player = [nextPlayer, nextPlayer.next, nextPlayer.next.next]
-                .first(where: activePlayers(in: state).contains) ?? state.player
+            state.player = [nextPlayer, nextPlayer.next, nextPlayer.next.next, state.player]
+                .first(where: activePlayers(in: state).contains)!
         }
     }
 }
