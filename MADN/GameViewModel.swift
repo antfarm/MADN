@@ -18,7 +18,7 @@ final class GameViewModel {
 
     private(set) var hasPlayerFinished = false
 
-    var canContinue: Bool { game.activePlayers.count >= 2 }
+    var isGameOver: Bool { game.isOver }
 
     func player(at field: Game.Field) -> Game.Player? {
         game.player(at: field)

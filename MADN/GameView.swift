@@ -34,7 +34,7 @@ struct GameView: View {
                 .disabled(game.hasPlayerFinished)
                 .overlay {
                     if game.hasPlayerFinished {
-                        if game.canContinue {
+                        if !game.isGameOver {
                             Dialog(title: "New Game?", buttons: [("OK", { step = .selectPlayers }), ("Continue", { game.continueGame() })]) {}
                         }
                         else {

@@ -303,3 +303,28 @@ struct PossibleMoves {
         #expect(try !Rules.possibleMoves(in: state).contains { $0.from == "15" })
     }
 }
+
+@Suite("The end of the game")
+struct EndOfGame {
+
+    @Test("the game is over when all players have finished")
+    func gameOver() throws {
+        let state = try State(pieces: [.one: ["0a", "0b", "0c", "0d"]], player: .one)
+
+        #expect(Rules.isGameOver(in: state))
+    }
+
+    @Test("the game goes on while a player has not finished")
+    func notOver() throws {
+        let state = try State(pieces: [.one: ["0a", "0b", "0c", "05"]], player: .one)
+
+        #expect(!Rules.isGameOver(in: state))
+    }
+
+    @Test("rolling after the game is over is rejected")
+    func rollAfterGameOver() throws {
+        let state = try State(pieces: [.one: ["0a", "0b", "0c", "0d"]], player: .one)
+
+        #expect(throws: GameError.gameOver) { try Rules.roll(.three, in: state) }
+    }
+}

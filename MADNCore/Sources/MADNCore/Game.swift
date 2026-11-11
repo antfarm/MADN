@@ -20,6 +20,8 @@ public struct Game: Codable {
 
     public var activePlayers: Set<Player> { Rules.activePlayers(in: state) }
 
+    public var isOver: Bool { Rules.isGameOver(in: state) }
+
     public var die: DieValue? { state.die }
 
     public func player(at field: Field) -> Player? {
@@ -51,6 +53,7 @@ public enum GameError: Error, Equatable, CustomStringConvertible {
     case tooManyPieces(Game.Player)
     case noPiece(Game.Field)
     case fieldNotOnPath
+    case gameOver
     case dieNotRolled
     case dieAlreadyRolled
     case cannotMove(Game.Field)
@@ -65,6 +68,7 @@ public enum GameError: Error, Equatable, CustomStringConvertible {
         case .tooManyPieces(let player): "Player \(player.rawValue) has too many pieces"
         case .noPiece(let field): "No piece on \(field)"
         case .fieldNotOnPath: "Field not on player's path"
+        case .gameOver: "The game is over"
         case .dieNotRolled: "Die not rolled"
         case .dieAlreadyRolled: "Die already rolled"
         case .cannotMove(let field): "\(field) cannot move"

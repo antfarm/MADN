@@ -16,6 +16,10 @@ extension Game {
             state.players.filter { state.board.pieces(for: $0) != Set($0.homeFields) }
         }
 
+        static func isGameOver(in state: State) -> Bool {
+            activePlayers(in: state).isEmpty
+        }
+
         static func possibleMoves(in state: State) throws -> [Move] {
             guard let die = state.die else { throw GameError.dieNotRolled }
 
@@ -58,6 +62,10 @@ extension Game {
         }
 
         static func roll(_ die: DieValue, in state: State) throws -> State {
+            guard !isGameOver(in: state) else {
+                throw GameError.gameOver
+            }
+
             guard state.die == nil else {
                 throw GameError.dieAlreadyRolled
             }
