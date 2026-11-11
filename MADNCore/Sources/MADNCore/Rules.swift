@@ -62,9 +62,9 @@ extension Game {
                 throw GameError.dieAlreadyRolled
             }
 
-            var next = state
-            next.die = die
-            return next
+            var state = state
+            state.die = die
+            return state
         }
 
         static func move(field: Field, in state: State) throws -> State {
@@ -72,17 +72,17 @@ extension Game {
                 throw GameError.cannotMove(field)
             }
 
-            var next = state
+            var state = state
 
             if let opponent = state.board.player(at: target) {
                 let outField = opponent.outFields.first(where: state.board.isEmpty)!
-                try next.board.move(from: target, to: outField)
+                try state.board.move(from: target, to: outField)
             }
 
-            try next.board.move(from: field, to: target)
+            try state.board.move(from: field, to: target)
 
-            advanceTurn(in: &next)
-            return next
+            advanceTurn(in: &state)
+            return state
         }
 
         static func pass(in state: State) throws -> State {
@@ -90,7 +90,7 @@ extension Game {
                 throw GameError.movePossible
             }
 
-            var next = state
+            var state = state
 
             let pieces = state.board.pieces(for: state.player)
 
@@ -98,13 +98,13 @@ extension Game {
                 && pieces.contains(where: \.isOut) // staged pieces left
                 && !hasPieceInPlay(in: state) { // nothing else could move
 
-                next.extraRollsUsed += 1
-                next.die = nil // roll again
-                return next
+                state.extraRollsUsed += 1
+                state.die = nil // roll again
+                return state
             }
 
-            advanceTurn(in: &next)
-            return next
+            advanceTurn(in: &state)
+            return state
         }
 
         private static func hasPieceInPlay(in state: State) -> Bool {
