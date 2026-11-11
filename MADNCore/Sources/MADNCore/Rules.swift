@@ -12,6 +12,10 @@ extension Game {
             return Dictionary(uniqueKeysWithValues: players.map { ($0, Set($0.outFields)) })
         }
 
+        static func activePlayers(in state: State) -> Set<Player> {
+            state.players.filter { state.board.pieces(for: $0) != Set($0.homeFields) }
+        }
+
         static func possibleMoves(in state: State) throws -> [Move] {
             guard let die = state.die else { throw GameError.dieNotRolled }
 
@@ -105,10 +109,6 @@ extension Game {
 
             advanceTurn(in: &next)
             return next
-        }
-
-        static func activePlayers(in state: State) -> Set<Player> {
-            state.players.filter { state.board.pieces(for: $0) != Set($0.homeFields) }
         }
 
         private static func advanceTurn(in state: inout State) {
