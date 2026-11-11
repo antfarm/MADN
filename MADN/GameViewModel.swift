@@ -16,8 +16,6 @@ final class GameViewModel {
 
     var die: Int? { game.die?.rawValue }
 
-    private(set) var hasPlayerFinished = false
-
     var isGameOver: Bool { game.isOver }
 
     func player(at field: Game.Field) -> Game.Player? {
@@ -34,11 +32,7 @@ final class GameViewModel {
 
     func start(players: Set<Game.Player>, player: Game.Player) {
         game = try! Game(players: players, player: player)
-        hasPlayerFinished = false
-    }
-
-    func continueGame() {
-        hasPlayerFinished = false
+        shouldOfferNewGame = false
     }
 
     func roll() {
@@ -62,11 +56,39 @@ final class GameViewModel {
         do {
             try game.move(field: field)
 
-            if !game.activePlayers.contains(movingPlayer) { hasPlayerFinished = true }
+            if !game.activePlayers.contains(movingPlayer) { shouldOfferNewGame = true }
         } catch {
             print(error)
         }
     }
+
+    // Dialogs
+
+    private(set) var shouldOfferNewGame = false
+
+    func continueGame() {
+        shouldOfferNewGame = false
+    }
+
+    // Board topology
+
+    func isTrackField(_ field: Game.Field) -> Bool {
+        field.isTrack
+    }
+
+    func fieldOwner(of field: Game.Field) -> Game.Player? {
+        field.owner
+    }
+
+    // Board grid layout
+
+    let cellsPerSide = BoardLayout.cellsPerSide
+
+    func field(row: Int, column: Int) -> Game.Field? {
+        BoardLayout.field(row: row, column: column)
+    }
+
+    let trackCells = BoardLayout.trackCells
 
     // Player colors, corners and rotation
 
@@ -91,24 +113,4 @@ final class GameViewModel {
     func rotation(for player: Game.Player) -> Angle {
         .degrees(Double(player.rawValue) * 90)
     }
-
-    // Board topology
-
-    func isTrackField(_ field: Game.Field) -> Bool {
-        field.isTrack
-    }
-
-    func fieldOwner(of field: Game.Field) -> Game.Player? {
-        field.owner
-    }
-
-    // Board grid layout
-
-    let cellsPerSide = BoardLayout.cellsPerSide
-
-    func field(row: Int, column: Int) -> Game.Field? {
-        BoardLayout.field(row: row, column: column)
-    }
-
-    let trackCells = BoardLayout.trackCells
 }

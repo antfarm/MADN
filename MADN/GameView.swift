@@ -31,9 +31,9 @@ struct GameView: View {
             }
         case .playing:
             BoardView(game: game)
-                .disabled(game.hasPlayerFinished)
+                .disabled(game.shouldOfferNewGame)
                 .overlay {
-                    if game.hasPlayerFinished {
+                    if game.shouldOfferNewGame {
                         if !game.isGameOver {
                             Dialog(title: "New Game?", buttons: [("OK", { step = .selectPlayers }), ("Continue", { game.continueGame() })]) {}
                         }
