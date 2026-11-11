@@ -63,6 +63,13 @@ struct Turn {
         #expect(Rules.activePlayers(in: state) == [.two])
     }
 
+    @Test("a player with all 4 pieces in their home row is among the finished players")
+    func finishedPlayers() throws {
+        let state = try State(pieces: [.one: ["0a", "0b", "0c", "0d"], .two: ["05"]], player: .one)
+
+        #expect(Rules.finishedPlayers(in: state) == [.one])
+    }
+
     @Test("a player who finishes with a 6 does not roll again")
     func finishWithSix() throws {
         let state = try State(pieces: [.one: ["0b", "0c", "0d", "34"], .two: ["15"], .three: ["25"]], player: .one)

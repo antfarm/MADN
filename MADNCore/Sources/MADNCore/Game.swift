@@ -18,7 +18,11 @@ public struct Game: Codable {
 
     public var player: Player { state.player }
 
+    public var players: Set<Player> { state.players }
+
     public var activePlayers: Set<Player> { Rules.activePlayers(in: state) }
+
+    public var finishedPlayers: Set<Player> { Rules.finishedPlayers(in: state) }
 
     public var isOver: Bool { Rules.isGameOver(in: state) }
 

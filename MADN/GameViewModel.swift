@@ -18,6 +18,8 @@ final class GameViewModel {
 
     var isGameOver: Bool { game.isOver }
 
+    var finishedPlayers: Set<Game.Player> { game.finishedPlayers }
+
     func player(at field: Game.Field) -> Game.Player? {
         game.player(at: field)
     }
@@ -32,7 +34,6 @@ final class GameViewModel {
 
     func start(players: Set<Game.Player>, player: Game.Player) {
         game = try! Game(players: players, player: player)
-        shouldOfferNewGame = false
     }
 
     func roll() {
@@ -51,23 +52,11 @@ final class GameViewModel {
     }
 
     func move(field: Game.Field) {
-        let movingPlayer = game.player
-
         do {
             try game.move(field: field)
-
-            if !game.activePlayers.contains(movingPlayer) { shouldOfferNewGame = true }
         } catch {
             print(error)
         }
-    }
-
-    // Dialogs
-
-    private(set) var shouldOfferNewGame = false
-
-    func continueGame() {
-        shouldOfferNewGame = false
     }
 
     // Board topology

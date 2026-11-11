@@ -12,6 +12,8 @@ struct GameView: View {
     @State private var game = GameViewModel()
     @State private var step = Step.selectPlayers
 
+    @State private var shouldPresentNewGameDialog = false
+
     var body: some View {
         switch step {
         case .selectPlayers:
@@ -31,15 +33,18 @@ struct GameView: View {
             }
         case .playing:
             BoardView(game: game)
-                .disabled(game.shouldOfferNewGame)
+                .disabled(shouldPresentNewGameDialog)
+                .onChange(of: game.finishedPlayers) { old, new in
+                    if new.count > old.count { shouldPresentNewGameDialog = true } // a player has just finished
+                }
                 .overlay {
-                    if game.shouldOfferNewGame {
-                        if !game.isGameOver {
-                            Dialog(title: "New Game?", buttons: [("OK", { step = .selectPlayers }), ("Continue", { game.continueGame() })]) {}
-                        }
-                        else {
-                            Dialog(title: "New Game?", buttons: [("OK", { step = .selectPlayers })]) {}
-                        }
+                    if shouldPresentNewGameDialog {
+                        Dialog(title: "New Game?",
+                               ok: ("OK", {
+                                   shouldPresentNewGameDialog = false
+                                   step = .selectPlayers
+                               }),
+                               cancel: game.isGameOver ? nil : ("Continue", { shouldPresentNewGameDialog = false })) {}
                     }
                 }
         }
@@ -48,7 +53,8 @@ struct GameView: View {
 
 struct Dialog<Content: View>: View {
     let title: String
-    let buttons: [(title: String, action: () -> Void)]
+    let ok: (title: String, action: () -> Void)
+    var cancel: (title: String, action: () -> Void)? = nil
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -59,12 +65,14 @@ struct Dialog<Content: View>: View {
             content
 
             HStack(spacing: 24) {
-                ForEach(buttons.indices, id: \.self) { index in
-                    Button(buttons[index].title, action: buttons[index].action)
-                        .font(.title)
-                        .buttonStyle(.borderedProminent)
+                Button(ok.title, action: ok.action)
+
+                if let cancel {
+                    Button(cancel.title, action: cancel.action)
                 }
             }
+            .font(.title)
+            .buttonStyle(.borderedProminent)
         }
         .frame(minWidth: 320)
         .padding(32)
@@ -85,7 +93,7 @@ struct PlayerDialog: View {
     let onOK: (Set<Game.Player>) -> Void
 
     var body: some View {
-        Dialog(title: title, buttons: [(buttonTitle, { onOK(selected) })]) {
+        Dialog(title: title, ok: (buttonTitle, { onOK(selected) })) {
             HStack {
                 ForEach(players, id: \.self) { player in
                     PlayerButton(color: color(player), isSelected: selected.contains(player), onTap: { tap(player) })
@@ -147,9 +155,9 @@ struct UnstyledButtonStyle: ButtonStyle {
 }
 
 #Preview("Player finished") {
-    Dialog(title: "New Game?", buttons: [("OK", {}), ("Continue", {})]) {}
+    Dialog(title: "New Game?", ok: ("OK", {}), cancel: ("Continue", {})) {}
 }
 
 #Preview("Game over") {
-    Dialog(title: "New Game?", buttons: [("OK", {})]) {}
+    Dialog(title: "New Game?", ok: ("OK", {})) {}
 }

@@ -13,7 +13,11 @@ extension Game {
         }
 
         static func activePlayers(in state: State) -> Set<Player> {
-            state.players.filter { state.board.pieces(for: $0) != Set($0.homeFields) }
+            state.players.subtracting(finishedPlayers(in: state))
+        }
+
+        static func finishedPlayers(in state: State) -> Set<Player> {
+            state.players.filter { state.board.pieces(for: $0) == Set($0.homeFields) }
         }
 
         static func isGameOver(in state: State) -> Bool {
