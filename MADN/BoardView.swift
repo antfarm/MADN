@@ -24,8 +24,8 @@ struct BoardView: View {
                 GridRow {
                     ForEach(0..<game.cellsPerSide, id: \.self) { column in
                         if let field = game.field(row: row, column: column) {
-                            let hasMovablePiece = game.movablePieces.contains(field)
-                            let player = game.player(at: field)
+                            let hasMovablePiece = game.presented.movablePieces.contains(field)
+                            let player = game.presented.player(at: field)
 
                             FieldView(
                                 color: game.color(for: game.fieldOwner(of: field)),
@@ -49,13 +49,13 @@ struct BoardView: View {
 
             TrackLine(fieldCenters: fieldCenters)
         }
-        .overlay(alignment: game.corner(for: game.player)) {
+        .overlay(alignment: game.corner(for: game.presented.player)) {
             DieView(
-                value: game.die,
-                color: game.color(for: game.player),
+                value: game.presented.die,
+                color: game.color(for: game.presented.player),
                 onRoll: { game.roll() }
             )
-            .rotationEffect(game.rotation(for: game.player))
+            .rotationEffect(game.rotation(for: game.presented.player))
             .frame(width: Self.cellSize, height: Self.cellSize)
             .padding(2.25 * Self.cellSize)
         }

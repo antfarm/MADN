@@ -4,46 +4,89 @@ import MADNCore
 @Observable
 final class GameViewModel {
 
-    private var game: Game
+    private var model: Game
 
-    init(game: Game = try! Game()) {
-        self.game = game
+    private(set) var presented: PresentedState
+
+    init(game model: Game = try! Game()) {
+        self.model = model
+        presented = PresentedState(game: model)
+    }
+
+    // Presented state
+
+    // Decouples model state from presented state: changes to the model happen immediately, while
+    // changes to the presented state can be animated and delayed.
+    // This way, the model state is always valid when it is serialized, and the
+    // presented state does not have to follow the rules of the game.
+    // Presented state is always synced with the model after a model change, either immediately or
+    // after presenting.
+
+    struct PresentedState {
+        var player: Game.Player
+        var pieces: [Game.Field: Game.Player]
+        var die: Int?
+        var movablePieces: Set<Game.Field>
+
+        init(game: Game) {
+            player = game.player
+
+            pieces = Game.Field.allCases.reduce(into: [:]) { pieces, field in
+                pieces[field] = game.player(at: field)
+            }
+
+            die = game.die?.rawValue
+
+            movablePieces = game.die == nil
+                ? []
+                : Set(try! game.possibleMoves().map(\.from))
+        }
+
+        func player(at field: Game.Field) -> Game.Player? {
+            pieces[field]
+        }
+    }
+
+    private var isPresenting = false
+
+    private func presentThenSync(_ change: @escaping () async -> Void) {
+        isPresenting = true
+
+        Task {
+            defer {
+                withAnimation { presented = PresentedState(game: model) }
+                isPresenting = false
+            }
+
+            await change()
+        }
     }
 
     // Game state
 
-    var player: Game.Player { game.player }
+    var isGameOver: Bool { model.isOver }
 
-    var die: Int? { game.die?.rawValue }
-
-    var isGameOver: Bool { game.isOver }
-
-    var finishedPlayers: Set<Game.Player> { game.finishedPlayers }
-
-    func player(at field: Game.Field) -> Game.Player? {
-        game.player(at: field)
-    }
-
-    var movablePieces: Set<Game.Field> {
-        guard game.die != nil else { return [] }
-
-        return Set(try! game.possibleMoves().map(\.from))
-    }
+    var finishedPlayers: Set<Game.Player> { model.finishedPlayers }
 
     // Game actions
 
     func start(players: Set<Game.Player>, player: Game.Player) {
-        game = try! Game(players: players, player: player)
+        model = try! Game(players: players, player: player)
+        presented = PresentedState(game: model)
     }
 
     func roll() {
-        do {
-            try game.roll()
+        guard !isPresenting else { return }
 
-            if try game.possibleMoves().isEmpty {
-                Task {
-                    try? await Task.sleep(for: .seconds(1.5)) // show the roll before passing
-                    withAnimation { try? game.pass() }
+        do {
+            try model.roll()
+            presented = PresentedState(game: model)
+
+            if try model.possibleMoves().isEmpty {
+                try model.pass()
+
+                presentThenSync { // show the roll before passing
+                    try? await Task.sleep(for: .seconds(1.5))
                 }
             }
         } catch {
@@ -52,8 +95,11 @@ final class GameViewModel {
     }
 
     func move(field: Game.Field) {
+        guard !isPresenting else { return }
+
         do {
-            try game.move(field: field)
+            try model.move(field: field)
+            presented = PresentedState(game: model)
         } catch {
             print(error)
         }
