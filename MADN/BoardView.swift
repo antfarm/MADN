@@ -19,20 +19,22 @@ struct BoardView: View {
     }
 
     private var grid: some View {
-        Grid(horizontalSpacing: 0, verticalSpacing: 0) {
+        let possibleMoves = game.possibleMoves
+
+        return Grid(horizontalSpacing: 0, verticalSpacing: 0) {
             ForEach(0..<game.cellsPerSide, id: \.self) { row in
                 GridRow {
                     ForEach(0..<game.cellsPerSide, id: \.self) { column in
                         if let field = game.field(row: row, column: column) {
-                            let hasMovablePiece = game.presented.movablePieces.contains(field)
+                            let move = possibleMoves.first { $0.from == field }
                             let player = game.presented.player(at: field)
 
                             FieldView(
                                 color: game.color(for: game.fieldOwner(of: field)),
                                 pieceColor: game.color(for: player),
-                                isHighlighted: hasMovablePiece,
+                                isHighlighted: move != nil,
                                 isSmall: !game.isTrackField(field) && player == nil,
-                                onTap: { withAnimation { game.move(field: field) } }
+                                onTap: { if let move { game.move(move) } }
                             )
                         } else {
                             Color.clear
@@ -146,4 +148,17 @@ private typealias PiecePositions = [Game.Player: [String]]
     let pieces = labels.mapValues { Set($0.map { Game.Field($0)! }) }
 
     BoardView(game: GameViewModel(game: try! Game(pieces: pieces, player: .one)))
+}
+
+#Preview("Bringing in captures") {
+    let labels: PiecePositions = [
+        .one: ["0A", "0B", "0C", "0D"],
+        .two: ["00", "1A", "1B", "1C"],
+    ]
+    let pieces = labels.mapValues { Set($0.map { Game.Field($0)! }) }
+
+    var game = try! Game(pieces: pieces, player: .one)
+    let _ = try! game.roll(.six)
+
+    BoardView(game: GameViewModel(game: game))
 }

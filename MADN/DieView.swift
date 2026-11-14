@@ -11,9 +11,10 @@ struct DieView: View {
     var body: some View {
         Button {
             isRolling = true
+            onRoll()
+
             withAnimation(.easeInOut(duration: 1)) {
                 rotation += 360
-                onRoll()
             } completion: {
                 isRolling = false
             }

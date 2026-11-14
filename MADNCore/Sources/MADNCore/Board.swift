@@ -155,7 +155,7 @@ extension Game.Player {
         field(stepsTravelled: 0)! // every path has a step 0
     }
 
-    private var path: [Game.Field] { Self.paths[self]! }
+    public var path: [Game.Field] { Self.paths[self]! }
 
     private static let paths: [Game.Player: [Game.Field]] = Dictionary(uniqueKeysWithValues:
         Game.Player.allCases.map { player in
