@@ -76,6 +76,22 @@ extension Game {
 
             var state = state
             state.die = die
+
+            if try possibleMoves(in: state).isEmpty {
+                let pieces = state.board.pieces(for: state.player)
+
+                if state.extraRollsUsed < 2 // three rolls not used up
+                    && pieces.contains(where: \.isOut) // staged pieces left
+                    && !hasPieceInPlay(in: state) { // nothing else could move
+
+                    state.extraRollsUsed += 1
+                    state.die = nil // roll again
+                }
+                else {
+                    advanceTurn(in: &state)
+                }
+            }
+
             return state
         }
 
@@ -92,28 +108,6 @@ extension Game {
             }
 
             try state.board.move(from: field, to: target)
-
-            advanceTurn(in: &state)
-            return state
-        }
-
-        static func pass(in state: State) throws -> State {
-            guard try possibleMoves(in: state).isEmpty else {
-                throw GameError.movePossible
-            }
-
-            var state = state
-
-            let pieces = state.board.pieces(for: state.player)
-
-            if state.extraRollsUsed < 2 // three rolls not used up
-                && pieces.contains(where: \.isOut) // staged pieces left
-                && !hasPieceInPlay(in: state) { // nothing else could move
-
-                state.extraRollsUsed += 1
-                state.die = nil // roll again
-                return state
-            }
 
             advanceTurn(in: &state)
             return state

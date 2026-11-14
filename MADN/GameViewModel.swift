@@ -78,16 +78,20 @@ final class GameViewModel {
     func roll() {
         guard !isPresenting else { return }
 
-        do {
-            try model.roll()
-            presented = PresentedState(game: model)
+        let die = Game.DieValue.random()
 
-            if try model.possibleMoves().isEmpty {
-                try model.pass()
+        do {
+            try model.roll(die)
+
+            if model.die == nil { // no possible move, so the core has passed
+                presented.die = die.rawValue
 
                 presentThenSync { // show the roll before passing
                     try? await Task.sleep(for: .seconds(1.5))
                 }
+            }
+            else {
+                presented = PresentedState(game: model)
             }
         } catch {
             print(error)

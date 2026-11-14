@@ -36,8 +36,4 @@ extension State {
     func moved(_ field: Field) throws -> State {
         try Rules.move(field: field, in: self)
     }
-
-    func passed() throws -> State {
-        try Rules.pass(in: self)
-    }
 }

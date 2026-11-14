@@ -43,10 +43,6 @@ public struct Game: Codable {
     public mutating func move(field: Field) throws {
         state = try Rules.move(field: field, in: state)
     }
-
-    public mutating func pass() throws {
-        state = try Rules.pass(in: state)
-    }
 }
 
 public enum GameError: Error, Equatable, CustomStringConvertible {
@@ -61,7 +57,6 @@ public enum GameError: Error, Equatable, CustomStringConvertible {
     case dieNotRolled
     case dieAlreadyRolled
     case cannotMove(Game.Field)
-    case movePossible
 
     public var description: String {
         switch self {
@@ -76,7 +71,6 @@ public enum GameError: Error, Equatable, CustomStringConvertible {
         case .dieNotRolled: "Die not rolled"
         case .dieAlreadyRolled: "Die already rolled"
         case .cannotMove(let field): "\(field) cannot move"
-        case .movePossible: "A move is possible"
         }
     }
 }
