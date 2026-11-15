@@ -12,8 +12,6 @@ struct GameView: View {
     @State private var game = GameViewModel()
     @State private var step = Step.selectPlayers
 
-    @State private var shouldPresentNewGameDialog = false
-
     var body: some View {
         switch step {
         case .selectPlayers:
@@ -33,18 +31,12 @@ struct GameView: View {
             }
         case .playing:
             BoardView(game: game)
-                .disabled(shouldPresentNewGameDialog)
-                .onChange(of: game.finishedPlayers) { old, new in
-                    if new.count > old.count { shouldPresentNewGameDialog = true } // a player has just finished
-                }
+                .disabled(game.hasPlayerFinished)
                 .overlay {
-                    if shouldPresentNewGameDialog {
+                    if game.hasPlayerFinished {
                         Dialog(title: "New Game?",
-                               ok: ("OK", {
-                                   shouldPresentNewGameDialog = false
-                                   step = .selectPlayers
-                               }),
-                               cancel: game.isGameOver ? nil : ("Continue", { shouldPresentNewGameDialog = false })) {}
+                               ok: ("OK", { step = .selectPlayers }),
+                               cancel: game.isGameOver ? nil : ("Continue", { game.resume() })) {}
                     }
                 }
         }
@@ -138,6 +130,14 @@ struct UnstyledButtonStyle: ButtonStyle {
     }
 }
 
+extension GameView {
+
+    fileprivate init(playing game: GameViewModel) {
+        _game = State(initialValue: game)
+        _step = State(initialValue: .playing)
+    }
+}
+
 #Preview {
     GameView()
 }
@@ -160,4 +160,17 @@ struct UnstyledButtonStyle: ButtonStyle {
 
 #Preview("Game over") {
     Dialog(title: "New Game?", ok: ("OK", {})) {}
+}
+
+#Preview("Finishing player") {
+    let labels: [Game.Player: [String]] = [
+        .one: ["34", "0b", "0c", "0d"],
+        .two: ["1A", "1B", "1C", "1D"],
+    ]
+    let pieces = labels.mapValues { Set($0.map { Game.Field($0)! }) }
+
+    var game = try! Game(pieces: pieces, player: .one)
+    let _ = try! game.roll(.six)
+
+    GameView(playing: GameViewModel(game: game))
 }

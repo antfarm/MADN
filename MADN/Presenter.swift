@@ -13,6 +13,7 @@ extension GameViewModel {
         var die: Int?
         var pieces: [Game.Field: Game.Player]
         var movingPiece: (player: Game.Player, field: Game.Field)?
+        var hasPlayerFinished = false
 
         init(game: Game) {
             player = game.player
@@ -49,32 +50,32 @@ extension GameViewModel {
             self.state = state
         }
 
-        func present(roll die: Game.DieValue, from before: Game, to after: Game) {
-            var rolled = PresentedState(game: before)
+        func present(roll die: Game.DieValue, canMove: Bool, from gameBeforeRoll: Game, to gameAfterRoll: Game) {
+            var rolled = PresentedState(game: gameBeforeRoll)
             rolled.die = die.rawValue
 
-            let steps: [Step] = if after.die != nil {
+            let steps: [Step] = if canMove {
                 [(state: rolled, duration: 1)]
             }
             else {
                 [
                     (state: rolled, duration: 1),
                     (state: rolled, duration: 1.5),
-                    (state: PresentedState(game: after), duration: 0.2),
+                    (state: PresentedState(game: gameAfterRoll), duration: 0.2),
                 ]
             }
 
             animate(sequence: steps)
         }
 
-        func present(move: (from: Game.Field, to: Game.Field), from before: Game, to after: Game) {
-            let player = before.player
+        func present(move: (from: Game.Field, to: Game.Field), hasPlayerFinished: Bool, from gameBeforeMove: Game, to gameAfterMove: Game) {
+            let player = gameBeforeMove.player
 
             let fromIndex = player.path.firstIndex(of: move.from)
             let toIndex = player.path.firstIndex(of: move.to)
 
-            func state(at target: Game.Field) -> PresentedState {
-                var state = PresentedState(game: before)
+            func state(withMovingPieceAt target: Game.Field) -> PresentedState {
+                var state = PresentedState(game: gameBeforeMove)
                 state.pieces[move.from] = nil
                 state.movingPiece = (player: player, field: target)
                 return state
@@ -82,14 +83,31 @@ extension GameViewModel {
 
             let hopSteps = if let fromIndex, let toIndex {
                 player.path[(fromIndex + 1)...toIndex].map { target in
-                    (state: state(at: target), duration: 0.2)
+                    (state: state(withMovingPieceAt: target), duration: 0.2)
                 }
             }
             else {
-                [(state: state(at: move.to), duration: 0.2)]
+                [(state: state(withMovingPieceAt: move.to), duration: 0.2)]
             }
 
-            let steps = hopSteps + [(state: PresentedState(game: after), duration: 0.2)]
+            // if this is the player's finishing move, do not advance the turn or change the die
+
+            func stateBeforeAdvancingTurn() -> PresentedState {
+                var state = PresentedState(game: gameAfterMove)
+                state.player = gameBeforeMove.player
+                state.die = gameBeforeMove.die?.rawValue
+                state.hasPlayerFinished = true
+                return state
+            }
+
+            let finalStep = if hasPlayerFinished {
+                (state: stateBeforeAdvancingTurn(), duration: 0.2)
+            }
+            else {
+                (state: PresentedState(game: gameAfterMove), duration: 0.2)
+            }
+
+            let steps = hopSteps + [finalStep]
 
             animate(sequence: steps)
         }

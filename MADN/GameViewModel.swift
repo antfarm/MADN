@@ -10,8 +10,6 @@ final class GameViewModel {
 
     var isGameOver: Bool { model.isOver }
 
-    var finishedPlayers: Set<Game.Player> { model.finishedPlayers }
-
     var possibleMoves: [(from: Game.Field, to: Game.Field)] {
         guard !presenter.isPresenting, model.die != nil else { return [] }
 
@@ -23,6 +21,8 @@ final class GameViewModel {
     private let presenter: Presenter
 
     var presented: PresentedState { presenter.state }
+
+    var hasPlayerFinished: Bool { presented.hasPlayerFinished }
 
     // Initialization
 
@@ -38,6 +38,10 @@ final class GameViewModel {
         presenter.present(PresentedState(game: model))
     }
 
+    func resume() {
+        presenter.present(PresentedState(game: model))
+    }
+
     func roll(_ die: Game.DieValue = .random()) {
         guard !presenter.isPresenting else { return }
 
@@ -45,7 +49,7 @@ final class GameViewModel {
 
         do {
             try model.roll(die)
-            presenter.present(roll: die, from: before, to: model)
+            presenter.present(roll: die, canMove: !possibleMoves.isEmpty, from: before, to: model)
         } catch {
             print(error)
         }
@@ -58,7 +62,9 @@ final class GameViewModel {
 
         do {
             try model.move(field: move.from)
-            presenter.present(move: move, from: before, to: model)
+
+            let hasPlayerFinished = model.finishedPlayers.count > before.finishedPlayers.count
+            presenter.present(move: move, hasPlayerFinished: hasPlayerFinished, from: before, to: model)
         } catch {
             print(error)
         }
