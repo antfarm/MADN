@@ -60,7 +60,7 @@ extension GameViewModel {
             else {
                 [
                     (state: rolled, duration: 1),
-                    (state: rolled, duration: 1.5),
+                    (state: rolled, duration: 1),
                     (state: PresentedState(game: gameAfterRoll), duration: 0.2),
                 ]
             }
