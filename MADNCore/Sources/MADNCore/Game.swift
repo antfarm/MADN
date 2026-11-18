@@ -11,9 +11,10 @@ public struct Game: Codable {
 
     public init( // for tests and previews
         pieces: PiecePositions,
-        player: Player = .one
+        player: Player = .one,
+        die: DieValue? = nil
     ) throws {
-        state = try State(pieces: pieces, player: player)
+        state = try State(pieces: pieces, player: player, die: die)
     }
 
     public var player: Player { state.player }

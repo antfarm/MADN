@@ -154,8 +154,7 @@ private typealias PiecePositions = [Game.Player: [String]]
     ]
     let pieces = labels.mapValues { Set($0.map { Game.Field($0)! }) }
 
-    var game = try! Game(pieces: pieces, player: .one)
-    let _ = try! game.roll(.six)
+    let game = try! Game(pieces: pieces, player: .one, die: .six)
 
     BoardView(game: GameViewModel(game: game))
 }
