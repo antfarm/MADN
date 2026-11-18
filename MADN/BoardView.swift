@@ -31,10 +31,10 @@ struct BoardView: View {
                             FieldView(
                                 color: game.fieldColor(at: field),
                                 pieceColor: game.pieceColor(at: field),
-                                isHighlighted: move != nil,
                                 isSmall: !(game.isTrackField(field) || game.hasPiece(at: field)),
                                 onTap: { if let move { game.move(move) } }
                             )
+                            .disabled(move == nil)
                         } else {
                             Color.clear
                         }
@@ -79,7 +79,6 @@ struct TrackLine: View {
 struct FieldView: View {
     let color: Color?
     let pieceColor: Color?
-    let isHighlighted: Bool
     let isSmall: Bool
     let onTap: () -> Void
 
@@ -92,10 +91,9 @@ struct FieldView: View {
                     if let color { Circle().fill(color.opacity(0.25)) }
                 }
                 .scaleEffect(isSmall ? 0.8 : 1)
-                .overlay { if let pieceColor { PieceView(color: pieceColor, isHighlighted: isHighlighted) } }
+                .overlay { if let pieceColor { PieceView(color: pieceColor) } }
         }
         .buttonStyle(UnstyledButtonStyle())
-        .disabled(!isHighlighted)
         .scaleEffect(0.95)
         .padding(5)
     }
@@ -103,12 +101,13 @@ struct FieldView: View {
 
 struct PieceView: View {
     let color: Color
-    let isHighlighted: Bool
+
+    @Environment(\.isEnabled) private var isEnabled
 
     var body: some View {
         Circle()
             .fill(color)
-            .strokeBorder(isHighlighted ? Color.orange : .black, lineWidth: isHighlighted ? 14 : 4)
+            .strokeBorder(isEnabled ? Color.orange : .black, lineWidth: isEnabled ? 14 : 4)
             .scaleEffect(0.75)
     }
 }
