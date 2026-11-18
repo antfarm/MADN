@@ -28,18 +28,18 @@ final class GameViewModel {
 
     init(game model: Game = try! Game()) {
         self.model = model
-        presenter = Presenter(state: PresentedState(game: model))
+        presenter = Presenter(game: model)
     }
 
     // Game actions
 
     func start(players: Set<Game.Player>, player: Game.Player) {
         model = try! Game(players: players, player: player)
-        presenter.present(PresentedState(game: model))
+        presenter.present(game: model)
     }
 
     func resume() {
-        presenter.present(PresentedState(game: model))
+        presenter.present(game: model)
     }
 
     func roll(_ die: Game.DieValue = .random()) {

@@ -9,118 +9,139 @@ extension GameViewModel {
     // presented state does not have to follow the rules of the game.
 
     struct PresentedState {
-        var player: Game.Player
-        var die: Int?
-        var pieces: [Game.Field: Game.Player]
-        var movingPiece: (player: Game.Player, field: Game.Field)?
-        var hasPlayerFinished = false
+        private(set) var player: Game.Player
+        private(set) var die: Int?
+        private var pieces: [Game.Field: Game.Player]
+        private(set) var hasPlayerFinished = false
 
         init(game: Game) {
             player = game.player
-
-            pieces = Game.Field.allCases.reduce(into: [:]) { pieces, field in
-                pieces[field] = game.player(at: field)
-            }
-
             die = game.die?.rawValue
+
+            pieces = Dictionary(uniqueKeysWithValues: Game.Field.allCases.compactMap { field in
+                guard let player = game.player(at: field) else { return nil }
+                return (field, player)
+            })
         }
 
-        func player(at field: Game.Field) -> Game.Player? {
-            if let movingPiece, movingPiece.field == field {
-                return movingPiece.player
-            }
+        func piece(at field: Game.Field) -> Game.Player? {
+            pieces[field]
+        }
 
-            return pieces[field]
+        func withDie(_ die: Game.DieValue?) -> PresentedState {
+            var state = self
+            state.die = die?.rawValue
+            return state
+        }
+
+        func withPieceRemoved(at field: Game.Field) -> PresentedState {
+            var state = self
+            state.pieces[field] = nil
+            return state
+        }
+
+        func withPieceReplaced(at field: Game.Field, by player: Game.Player) -> PresentedState {
+            var state = self
+            state.pieces[field] = player
+            return state
+        }
+
+        func withPlayer(_ player: Game.Player, finished: Bool = false) -> PresentedState {
+            var state = self
+            state.player = player
+            state.hasPlayerFinished = finished
+            return state
         }
     }
 
     @Observable
     final class Presenter {
 
-        typealias Step = (state: PresentedState, duration: Double)
+        typealias Frame = (state: PresentedState, duration: Double)
 
         private(set) var state: PresentedState
         private(set) var isPresenting = false
 
-        init(state: PresentedState) {
-            self.state = state
+        init(game: Game) {
+            state = PresentedState(game: game)
         }
 
-        func present(_ state: PresentedState) {
-            self.state = state
+        func present(game: Game) {
+            state = PresentedState(game: game)
         }
 
-        func present(roll die: Game.DieValue, canMove: Bool, from gameBeforeRoll: Game, to gameAfterRoll: Game) {
-            var rolled = PresentedState(game: gameBeforeRoll)
-            rolled.die = die.rawValue
+        func present(roll die: Game.DieValue, canMove: Bool, from gameBefore: Game, to gameAfter: Game) {
+            let stateAfterRolling = PresentedState(game: gameBefore)
+                .withDie(die)
 
-            let steps: [Step] = if canMove {
-                [(state: rolled, duration: 1)]
+            let frames: [Frame] = if canMove {
+                [(state: stateAfterRolling, duration: 1)]
             }
             else {
                 [
-                    (state: rolled, duration: 1),
-                    (state: rolled, duration: 1),
-                    (state: PresentedState(game: gameAfterRoll), duration: 0.2),
+                    (state: stateAfterRolling, duration: 1),
+                    (state: stateAfterRolling, duration: 1),
+                    (state: PresentedState(game: gameAfter), duration: 0.2),
                 ]
             }
 
-            animate(sequence: steps)
+            animate(sequence: frames)
         }
 
-        func present(move: (from: Game.Field, to: Game.Field), hasPlayerFinished: Bool, from gameBeforeMove: Game, to gameAfterMove: Game) {
-            let player = gameBeforeMove.player
+        func present(move: (from: Game.Field, to: Game.Field), hasPlayerFinished: Bool, from gameBefore: Game, to gameAfter: Game) {
+            let path = gameBefore.player.path
 
-            let fromIndex = player.path.firstIndex(of: move.from)
-            let toIndex = player.path.firstIndex(of: move.to)
+            let fromIndex = path.firstIndex(of: move.from)
+            let toIndex = path.firstIndex(of: move.to)
 
-            func state(withMovingPieceAt target: Game.Field) -> PresentedState {
-                var state = PresentedState(game: gameBeforeMove)
-                state.pieces[move.from] = nil
-                state.movingPiece = (player: player, field: target)
-                return state
+            func stateAfterStepping(to nextField: Game.Field) -> PresentedState {
+                PresentedState(game: gameBefore)
+                    .withPieceRemoved(at: move.from)
+                    .withPieceReplaced(at: nextField, by: gameBefore.player)
             }
 
-            let hopSteps = if let fromIndex, let toIndex {
-                player.path[(fromIndex + 1)...toIndex].map { target in
-                    (state: state(withMovingPieceAt: target), duration: 0.2)
+            let statesAfterStepping = if let fromIndex, let toIndex {
+                path[(fromIndex + 1)...toIndex].map { nextField in
+                    stateAfterStepping(to: nextField)
                 }
             }
             else {
-                [(state: state(withMovingPieceAt: move.to), duration: 0.2)]
+                [stateAfterStepping(to: move.to)]
+            }
+
+            let stepFrames = statesAfterStepping.map { state in
+                (state: state, duration: 0.2)
             }
 
             // if this is the player's finishing move, do not advance the turn or change the die
 
             func stateBeforeAdvancingTurn() -> PresentedState {
-                var state = PresentedState(game: gameAfterMove)
-                state.player = gameBeforeMove.player
-                state.die = gameBeforeMove.die?.rawValue
-                state.hasPlayerFinished = true
-                return state
+                PresentedState(game: gameAfter)
+                    .withPlayer(gameBefore.player, finished: true)
+                    .withDie(gameBefore.die)
             }
 
-            let finalStep = if hasPlayerFinished {
+            let finalFrame = if hasPlayerFinished {
                 (state: stateBeforeAdvancingTurn(), duration: 0.2)
             }
             else {
-                (state: PresentedState(game: gameAfterMove), duration: 0.2)
+                (state: PresentedState(game: gameAfter), duration: 0.2)
             }
 
-            let steps = hopSteps + [finalStep]
+            let frames = stepFrames + [finalFrame]
 
-            animate(sequence: steps)
+            animate(sequence: frames)
         }
 
-        private func animate(sequence steps: [Step]) {
+        private func animate(sequence frames: [Frame]) {
             isPresenting = true
 
             Task {
                 defer { isPresenting = false }
 
-                for step in steps {
-                    withAnimation(.linear(duration: step.duration)) { state = step.state }
-                    try? await Task.sleep(for: .seconds(step.duration))
+                for frame in frames {
+                    withAnimation(.linear(duration: frame.duration)) { state = frame.state }
+                    try? await Task.sleep(for: .seconds(frame.duration))
                 }
             }
         }

@@ -27,7 +27,7 @@ struct BoardView: View {
                     ForEach(0..<game.cellsPerSide, id: \.self) { column in
                         if let field = game.field(row: row, column: column) {
                             let move = possibleMoves.first { $0.from == field }
-                            let player = game.presented.player(at: field)
+                            let player = game.presented.piece(at: field)
 
                             FieldView(
                                 color: game.color(for: game.fieldOwner(of: field)),
