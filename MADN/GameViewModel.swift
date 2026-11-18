@@ -11,7 +11,7 @@ final class GameViewModel {
     var isGameOver: Bool { model.isOver }
 
     var possibleMoves: [(from: Game.Field, to: Game.Field)] {
-        guard !presenter.isPresenting, model.die != nil else { return [] }
+        guard model.die != nil else { return [] }
 
         return try! model.possibleMoves()
     }
@@ -23,6 +23,8 @@ final class GameViewModel {
     var presented: PresentedState { presenter.state }
 
     var hasPlayerFinished: Bool { presented.hasPlayerFinished }
+
+    var shouldDisableInput: Bool { presenter.isPresenting }
 
     func hasPiece(at field: Game.Field) -> Bool {
         presented.piece(at: field) != nil
@@ -47,8 +49,6 @@ final class GameViewModel {
     }
 
     func roll(_ die: Game.DieValue = .random()) {
-        guard !presenter.isPresenting else { return }
-
         let before = model
 
         do {
@@ -60,8 +60,6 @@ final class GameViewModel {
     }
 
     func move(_ move: (from: Game.Field, to: Game.Field)) {
-        guard !presenter.isPresenting else { return }
-
         let before = model
 
         do {
