@@ -24,6 +24,10 @@ final class GameViewModel {
 
     var hasPlayerFinished: Bool { presented.hasPlayerFinished }
 
+    func hasPiece(at field: Game.Field) -> Bool {
+        presented.piece(at: field) != nil
+    }
+
     // Initialization
 
     init(game model: Game = try! Game()) {
@@ -76,10 +80,6 @@ final class GameViewModel {
         field.isTrack
     }
 
-    func fieldOwner(of field: Game.Field) -> Game.Player? {
-        field.owner
-    }
-
     // Board grid layout
 
     let cellsPerSide = BoardLayout.cellsPerSide
@@ -98,10 +98,16 @@ final class GameViewModel {
         Self.playerColors[player.rawValue]
     }
 
-    func color(for player: Game.Player?) -> Color? {
-        guard let player else { return nil }
+    func fieldColor(at field: Game.Field) -> Color? {
+        guard let owner = field.owner else { return nil }
 
-        return Self.playerColors[player.rawValue]
+        return color(for: owner)
+    }
+
+    func pieceColor(at field: Game.Field) -> Color? {
+        guard let player = presented.piece(at: field) else { return nil }
+
+        return color(for: player)
     }
 
     private static let playerCorners: [Alignment] = [.bottomLeading, .topLeading, .topTrailing, .bottomTrailing]
