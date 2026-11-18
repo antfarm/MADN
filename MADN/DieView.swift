@@ -5,25 +5,12 @@ struct DieView: View {
     let color: Color
     let onRoll: () -> Void
 
-    @State var rotation = 0.0
-    @State var isRolling = false
-
     var body: some View {
-        Button {
-            isRolling = true
-            onRoll()
-
-            withAnimation(.easeInOut(duration: 1)) {
-                rotation += 360
-            } completion: {
-                isRolling = false
-            }
-        } label: {
+        Button(action: onRoll) {
             face.scaleEffect(0.9)
         }
         .buttonStyle(UnstyledButtonStyle())
-        .disabled(value != nil || isRolling)
-        .rotationEffect(.degrees(rotation))
+        .disabled(value != nil)
     }
 
     private var face: some View {

@@ -61,6 +61,7 @@ extension GameViewModel {
 
         private(set) var state: PresentedState
         private(set) var isPresenting = false
+        private(set) var dieRotation = 0.0
 
         init(game: Game) {
             state = PresentedState(game: game)
@@ -71,15 +72,18 @@ extension GameViewModel {
         }
 
         func present(roll die: Game.DieValue, canMove: Bool, from gameBefore: Game, to gameAfter: Game) {
+            let rollDuration = 1.0
+            withAnimation(.easeInOut(duration: rollDuration)) { dieRotation += 360 }
+
             let stateAfterRolling = PresentedState(game: gameBefore)
                 .withDie(die)
 
             let frames: [Frame] = if canMove {
-                [(state: stateAfterRolling, duration: 1)]
+                [(state: stateAfterRolling, duration: rollDuration)]
             }
             else {
                 [
-                    (state: stateAfterRolling, duration: 1),
+                    (state: stateAfterRolling, duration: rollDuration),
                     (state: stateAfterRolling, duration: 1),
                     (state: PresentedState(game: gameAfter), duration: 0.2),
                 ]

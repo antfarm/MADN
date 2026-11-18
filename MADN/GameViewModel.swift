@@ -26,6 +26,8 @@ final class GameViewModel {
 
     var shouldDisableInput: Bool { presenter.isPresenting }
 
+    var dieRotation: Double { presenter.dieRotation }
+
     func hasPiece(at field: Game.Field) -> Bool {
         presented.piece(at: field) != nil
     }
