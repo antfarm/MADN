@@ -31,12 +31,12 @@ struct GameView: View {
             }
         case .playing:
             BoardView(game: game)
-                .disabled(game.hasPlayerFinished)
+                .disabled(game.hasAction(.restart))
                 .overlay {
-                    if game.hasPlayerFinished {
+                    if game.hasAction(.restart) {
                         Dialog(title: "New Game?",
                                ok: ("OK", { step = .selectPlayers }),
-                               cancel: game.isGameOver ? nil : ("Continue", { game.resume() })) {}
+                               cancel: game.hasAction(.continue) ? ("Continue", { game.resume() }) : nil) {}
                     }
                 }
         }

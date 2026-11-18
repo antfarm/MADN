@@ -10,7 +10,6 @@ struct DieView: View {
             face.scaleEffect(0.9)
         }
         .buttonStyle(UnstyledButtonStyle())
-        .disabled(value != nil)
     }
 
     private var face: some View {

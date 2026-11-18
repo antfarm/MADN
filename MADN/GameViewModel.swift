@@ -8,12 +8,41 @@ final class GameViewModel {
 
     private var model: Game
 
-    var isGameOver: Bool { model.isOver }
+    enum Action: Equatable {
+        case roll
+        case move(from: Game.Field, to: Game.Field)
+        case restart
+        case `continue`
+    }
 
-    var possibleMoves: [(from: Game.Field, to: Game.Field)] {
-        guard model.die != nil else { return [] }
+    var actions: [Action] {
+        if presented.hasPlayerFinished {
+            model.isOver ? [.restart] : [.restart, .continue]
+        }
+        else if model.die == nil {
+            [.roll]
+        }
+        else {
+            try! model.possibleMoves().map { move in
+                .move(from: move.from, to: move.to)
+            }
+        }
+    }
 
-        return try! model.possibleMoves()
+    func hasAction(_ action: Action) -> Bool {
+        actions.contains(action)
+    }
+
+    func hasMove(from field: Game.Field) -> Bool {
+        moveTargets[field] != nil
+    }
+
+    private var hasMoves: Bool { !moveTargets.isEmpty }
+
+    private var moveTargets: [Game.Field: Game.Field] {
+        Dictionary(uniqueKeysWithValues: actions.compactMap { action in
+            if case .move(let from, let to) = action { (from, to) } else { nil }
+        })
     }
 
     // Presented state
@@ -21,8 +50,6 @@ final class GameViewModel {
     private let presenter: Presenter
 
     var presented: PresentedState { presenter.state }
-
-    var hasPlayerFinished: Bool { presented.hasPlayerFinished }
 
     var shouldDisableInput: Bool { presenter.isPresenting }
 
@@ -55,13 +82,15 @@ final class GameViewModel {
 
         do {
             try model.roll(die)
-            presenter.present(roll: die, canMove: !possibleMoves.isEmpty, from: before, to: model)
+            presenter.present(roll: die, canMove: hasMoves, from: before, to: model)
         } catch {
             print(error)
         }
     }
 
-    func move(_ move: (from: Game.Field, to: Game.Field)) {
+    func move(from field: Game.Field) {
+        let move = (from: field, to: moveTargets[field]!)
+
         let before = model
 
         do {

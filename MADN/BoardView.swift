@@ -19,22 +19,18 @@ struct BoardView: View {
     }
 
     private var grid: some View {
-        let possibleMoves = game.possibleMoves
-
-        return Grid(horizontalSpacing: 0, verticalSpacing: 0) {
+        Grid(horizontalSpacing: 0, verticalSpacing: 0) {
             ForEach(0..<game.cellsPerSide, id: \.self) { row in
                 GridRow {
                     ForEach(0..<game.cellsPerSide, id: \.self) { column in
                         if let field = game.field(row: row, column: column) {
-                            let move = possibleMoves.first { $0.from == field }
-
                             FieldView(
                                 color: game.fieldColor(at: field),
                                 pieceColor: game.pieceColor(at: field),
                                 isSmall: !(game.isTrackField(field) || game.hasPiece(at: field)),
-                                onTap: { if let move { game.move(move) } }
+                                onTap: { game.move(from: field) }
                             )
-                            .disabled(move == nil)
+                            .disabled(!game.hasMove(from: field))
                         } else {
                             Color.clear
                         }
@@ -56,6 +52,7 @@ struct BoardView: View {
                 color: game.color(for: game.presented.player),
                 onRoll: { game.roll() }
             )
+            .disabled(!game.hasAction(.roll))
             .rotationEffect(.degrees(game.dieRotation))
             .rotationEffect(game.rotation(for: game.presented.player))
             .frame(width: Self.cellSize, height: Self.cellSize)
