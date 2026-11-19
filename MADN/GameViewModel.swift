@@ -10,18 +10,18 @@ final class GameViewModel {
 
     var isOver: Bool { model.isOver }
 
-    func hasAction(_ action: Game.Action) -> Bool {
-        model.actions.contains(action)
+    var canRoll: Bool {
+        model.actions.contains { action in
+            if case .roll = action { true } else { false }
+        }
     }
 
-    func hasMove(from field: Game.Field) -> Bool {
+    func canMove(from field: Game.Field) -> Bool {
         model.target(from: field) != nil
     }
 
-    private var hasMoves: Bool {
-        model.actions.contains { action in
-            if case .move = action { true } else { false }
-        }
+    var canResume: Bool {
+        model.actions.contains(.resume)
     }
 
     // Presented state
@@ -54,16 +54,16 @@ final class GameViewModel {
         presenter.present(game: model)
     }
 
-    func resume() {
-        try! model.apply(.resume)
-        presenter.present(game: model)
-    }
-
     func roll(_ die: Game.DieValue = .random()) {
         let before = model
 
         do {
-            try model.apply(.roll, rolling: die) // TODO: let the core roll once the events report the rolled die
+            try model.apply(.roll(die))
+
+            let hasMoves = model.actions.contains { action in
+                if case .move = action { true } else { false }
+            }
+
             presenter.present(roll: die, canMove: hasMoves, from: before, to: model)
         } catch {
             print(error)
@@ -81,6 +81,11 @@ final class GameViewModel {
         } catch {
             print(error)
         }
+    }
+
+    func resume() {
+        try! model.apply(.resume)
+        presenter.present(game: model)
     }
 
     // Board topology

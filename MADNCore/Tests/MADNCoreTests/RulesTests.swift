@@ -303,7 +303,7 @@ struct EndOfGame {
         let state = try State(pieces: [.one: ["0a", "0b", "0c", "0d"]], player: .one)
 
         #expect(throws: GameError.actionNotOffered) {
-            try Rules.apply(.roll, in: state, rolling: .three)
+            try Rules.apply(.roll(.three), in: state)
         }
     }
 }
@@ -311,11 +311,11 @@ struct EndOfGame {
 @Suite("The actions")
 struct Actions {
 
-    @Test("before rolling, the only action is rolling")
+    @Test("before rolling, the actions are rolling each die value")
     func beforeRoll() throws {
         let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one)
 
-        #expect(Rules.actions(in: state) == [.roll])
+        #expect(Rules.actions(in: state) == DieValue.allCases.map(Game.Action.roll))
     }
 
     @Test("after rolling, the actions are the possible moves")

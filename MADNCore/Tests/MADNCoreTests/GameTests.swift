@@ -43,12 +43,12 @@ struct NewGame {
         #expect(game.player == .three)
     }
 
-    @Test("rolling shows a value")
+    @Test("rolling shows the rolled value")
     func roll() throws {
         var game = try Game(pieces: [.one: ["05"], .two: ["1A"]], player: .one) // any roll can move
-        try game.apply(.roll)
+        try game.apply(.roll(.three))
 
-        #expect(game.die != nil)
+        #expect(game.die == .three)
     }
 }
 

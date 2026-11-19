@@ -3,7 +3,7 @@ extension Game {
     typealias Move = (from: Field, to: Field)
 
     public enum Action: Equatable {
-        case roll
+        case roll(DieValue)
         case move(from: Field, to: Field)
         case resume
     }
@@ -83,7 +83,7 @@ extension Game {
                 [.resume]
             }
             else if state.die == nil {
-                [.roll]
+                DieValue.allCases.map(Action.roll)
             }
             else {
                 possibleMoves(in: state).map { move in
@@ -100,13 +100,13 @@ extension Game {
             return nil
         }
 
-        static func apply(_ action: Action, in state: State, rolling die: DieValue = .random()) throws -> State {
+        static func apply(_ action: Action, in state: State) throws -> State {
             guard actions(in: state).contains(action) else {
                 throw GameError.actionNotOffered
             }
 
             return switch action {
-            case .roll:
+            case .roll(let die):
                 roll(die, in: state)
             case .move(let from, let to):
                 try move(from: from, to: to, in: state)

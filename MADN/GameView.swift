@@ -32,10 +32,10 @@ struct GameView: View {
         case .playing:
             BoardView(game: game)
                 .overlay {
-                    if (game.hasAction(.resume) || game.isOver) && !game.isPresenting { // wait for piece animation to finish
+                    if (game.canResume || game.isOver) && !game.isPresenting { // wait for piece animation to finish
                         Dialog(title: "New Game?",
                                ok: ("OK", { step = .selectPlayers }),
-                               cancel: game.hasAction(.resume) ? ("Continue", { game.resume() }) : nil) {}
+                               cancel: game.canResume ? ("Continue", { game.resume() }) : nil) {}
                     }
                 }
         }

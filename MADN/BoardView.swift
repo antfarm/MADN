@@ -30,7 +30,7 @@ struct BoardView: View {
                                 isSmall: !(game.isTrackField(field) || game.hasPiece(at: field)),
                                 onTap: { game.move(from: field) }
                             )
-                            .disabled(!game.hasMove(from: field))
+                            .disabled(!game.canMove(from: field))
                         } else {
                             Color.clear
                         }
@@ -52,7 +52,7 @@ struct BoardView: View {
                 color: game.color(for: game.presented.player),
                 onRoll: { game.roll() }
             )
-            .disabled(!game.hasAction(.roll))
+            .disabled(!game.canRoll)
             .rotationEffect(.degrees(game.dieRotation))
             .rotationEffect(game.rotation(for: game.presented.player))
             .frame(width: Self.cellSize, height: Self.cellSize)

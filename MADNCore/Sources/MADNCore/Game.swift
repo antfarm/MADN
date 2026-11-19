@@ -41,8 +41,8 @@ public struct Game: Codable {
         Rules.target(from: field, in: state)
     }
 
-    public mutating func apply(_ action: Action, rolling die: DieValue = .random()) throws {
-        state = try Rules.apply(action, in: state, rolling: die)
+    public mutating func apply(_ action: Action) throws {
+        state = try Rules.apply(action, in: state)
     }
 }
 
