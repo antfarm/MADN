@@ -34,8 +34,8 @@ extension Game {
             finishedPlayers(in: state).contains(state.player)
         }
 
-        static func possibleMoves(in state: State) throws -> [Move] {
-            guard let die = state.die else { throw GameError.dieNotRolled }
+        private static func possibleMoves(in state: State) -> [Move] {
+            guard let die = state.die else { return [] }
 
             let moves: [Move] = state.board.pieces(for: state.player).compactMap { field in
                 if field.isOut {
@@ -86,7 +86,7 @@ extension Game {
                 [.roll]
             }
             else {
-                try! possibleMoves(in: state).map { move in
+                possibleMoves(in: state).map { move in
                     .move(from: move.from, to: move.to)
                 }
             }
@@ -100,30 +100,26 @@ extension Game {
             return nil
         }
 
-        static func apply(_ action: Action, in state: State) throws -> State {
-            switch action {
+        static func apply(_ action: Action, in state: State, rolling die: DieValue = .random()) throws -> State {
+            guard actions(in: state).contains(action) else {
+                throw GameError.actionNotOffered
+            }
+
+            return switch action {
             case .roll:
-                try roll(.random(), in: state)
+                roll(die, in: state)
             case .move(let from, let to):
                 try move(from: from, to: to, in: state)
             case .resume:
-                try resume(in: state)
+                resume(in: state)
             }
         }
 
-        static func roll(_ die: DieValue, in state: State) throws -> State {
-            guard !isGameOver(in: state) else {
-                throw GameError.gameOver
-            }
-
-            guard state.die == nil else {
-                throw GameError.dieAlreadyRolled
-            }
-
+        private static func roll(_ die: DieValue, in state: State) -> State {
             var state = state
             state.die = die
 
-            if try possibleMoves(in: state).isEmpty {
+            if possibleMoves(in: state).isEmpty {
                 let pieces = state.board.pieces(for: state.player)
 
                 if state.extraRollsUsed < 2 // three rolls not used up
@@ -141,11 +137,7 @@ extension Game {
             return state
         }
 
-        static func move(from field: Field, to target: Field, in state: State) throws -> State {
-            guard actions(in: state).contains(.move(from: field, to: target)) else {
-                throw GameError.actionNotOffered
-            }
-
+        private static func move(from field: Field, to target: Field, in state: State) throws -> State {
             var state = state
 
             if let opponent = state.board.player(at: target) {
@@ -162,11 +154,7 @@ extension Game {
             return state
         }
 
-        static func resume(in state: State) throws -> State {
-            guard hasPlayerFinished(in: state) else {
-                throw GameError.actionNotOffered
-            }
-
+        private static func resume(in state: State) -> State {
             var state = state
             advanceTurn(in: &state)
             return state

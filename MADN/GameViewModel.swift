@@ -63,7 +63,7 @@ final class GameViewModel {
         let before = model
 
         do {
-            try model.roll(die) // TODO: replace with apply once the events report the rolled die
+            try model.apply(.roll, rolling: die) // TODO: let the core roll once the events report the rolled die
             presenter.present(roll: die, canMove: hasMoves, from: before, to: model)
         } catch {
             print(error)

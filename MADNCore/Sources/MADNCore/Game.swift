@@ -41,13 +41,8 @@ public struct Game: Codable {
         Rules.target(from: field, in: state)
     }
 
-    public mutating func apply(_ action: Action) throws {
-        state = try Rules.apply(action, in: state)
-    }
-
-    // TODO: remove once the events report the rolled die; until then, the app needs to know it
-    public mutating func roll(_ die: DieValue) throws {
-        state = try Rules.roll(die, in: state)
+    public mutating func apply(_ action: Action, rolling die: DieValue = .random()) throws {
+        state = try Rules.apply(action, in: state, rolling: die)
     }
 }
 
@@ -59,9 +54,6 @@ public enum GameError: Error, Equatable, CustomStringConvertible {
     case tooManyPieces(Game.Player)
     case noPiece(Game.Field)
     case fieldNotOnPath
-    case gameOver
-    case dieNotRolled
-    case dieAlreadyRolled
     case actionNotOffered
 
     public var description: String {
@@ -73,9 +65,6 @@ public enum GameError: Error, Equatable, CustomStringConvertible {
         case .tooManyPieces(let player): "Player \(player.rawValue) has too many pieces"
         case .noPiece(let field): "No piece on \(field)"
         case .fieldNotOnPath: "Field not on player's path"
-        case .gameOver: "The game is over"
-        case .dieNotRolled: "Die not rolled"
-        case .dieAlreadyRolled: "Die already rolled"
         case .actionNotOffered: "Action not offered"
         }
     }
