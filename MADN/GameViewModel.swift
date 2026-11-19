@@ -104,7 +104,7 @@ final class GameViewModel {
 
     let trackCells = BoardLayout.trackCells
 
-    // Player colors, corners and rotation
+    // Player colors
 
     private static let playerColors = [Color.yellow, .blue, .red, .green]
 
@@ -123,6 +123,8 @@ final class GameViewModel {
 
         return color(for: player)
     }
+
+    // Die placement
 
     private static let playerCorners: [Alignment] = [.bottomLeading, .topLeading, .topTrailing, .bottomTrailing]
 
