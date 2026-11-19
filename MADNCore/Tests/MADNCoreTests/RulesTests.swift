@@ -7,7 +7,7 @@ struct Turn {
     @Test("moving after a 6 lets the player roll again")
     func moveAfterSix() throws {
         let state = try State(pieces: [.one: ["05"], .two: []], player: .one, die: .six)
-        let next = try Rules.move(field: "05", in: state)
+        let next = try state.moved("05")
 
         #expect(next.player == .one)
         #expect(next.die == nil)
@@ -16,7 +16,7 @@ struct Turn {
     @Test("moving advances the turn after anything but a 6", arguments: [.one, .two, .three, .four, .five] as [DieValue])
     func moveAdvancesTurn(die: DieValue) throws {
         let state = try State(pieces: [.one: ["05"], .two: []], player: .one, die: die)
-        let next = try Rules.move(field: "05", in: state)
+        let next = try state.moved("05")
 
         #expect(next.player == .two)
         #expect(next.die == nil)
@@ -75,6 +75,7 @@ struct Turn {
         let state = try State(pieces: [.one: ["0b", "0c", "0d", "34"], .two: ["15"], .three: ["25"]], player: .one)
             .rolled(.six)
             .moved("34")
+            .resumed()
 
         #expect(state.player == .two)
     }
@@ -181,7 +182,7 @@ struct TrackField {
     @Test("moves to its target field")
     func movesToTarget() throws {
         let state = try State(pieces: [.one: ["05"]], player: .one, die: .three)
-        let next = try Rules.move(field: "05", in: state)
+        let next = try state.moved("05")
 
         #expect(next.board.player(at: "05") == nil)
         #expect(next.board.player(at: "08") == .one)
@@ -320,5 +321,61 @@ struct EndOfGame {
         let state = try State(pieces: [.one: ["0a", "0b", "0c", "0d"]], player: .one)
 
         #expect(throws: GameError.gameOver) { try Rules.roll(.three, in: state) }
+    }
+}
+
+@Suite("The actions")
+struct Actions {
+
+    @Test("before rolling, the only action is rolling")
+    func beforeRoll() throws {
+        let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one)
+
+        #expect(Rules.actions(in: state) == [.roll])
+    }
+
+    @Test("after rolling, the actions are the possible moves")
+    func afterRoll() throws {
+        let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one, die: .three)
+
+        #expect(Rules.actions(in: state) == [.move(from: "05", to: "08")])
+    }
+
+    @Test("after a player finishes, the only action is resuming")
+    func afterFinish() throws {
+        let state = try State(pieces: [.one: ["0b", "0c", "0d", "34"], .two: ["15"], .three: ["25"]], player: .one)
+            .rolled(.six)
+            .moved("34")
+
+        #expect(Rules.actions(in: state) == [.resume])
+    }
+
+    @Test("when the game is over, there are no actions")
+    func gameOver() throws {
+        let state = try State(pieces: [.one: ["0a", "0b", "0c", "0d"]], player: .one)
+
+        #expect(Rules.actions(in: state).isEmpty)
+    }
+
+    @Test("a movable piece has a target, other pieces have none")
+    func target() throws {
+        let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one, die: .three)
+
+        #expect(Rules.target(from: "05", in: state) == "08")
+        #expect(Rules.target(from: "15", in: state) == nil)
+    }
+
+    @Test("a move that is not offered is rejected")
+    func moveNotOffered() throws {
+        let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one, die: .three)
+
+        #expect(throws: GameError.actionNotOffered) { try Rules.move(from: "05", to: "09", in: state) }
+    }
+
+    @Test("resuming without a finished player is rejected")
+    func resumeNotOffered() throws {
+        let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one)
+
+        #expect(throws: GameError.actionNotOffered) { try Rules.resume(in: state) }
     }
 }

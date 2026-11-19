@@ -8,41 +8,20 @@ final class GameViewModel {
 
     private var model: Game
 
-    enum Action: Equatable {
-        case roll
-        case move(from: Game.Field, to: Game.Field)
-        case restart
-        case `continue`
-    }
+    var isOver: Bool { model.isOver }
 
-    var actions: [Action] {
-        if presented.hasPlayerFinished {
-            model.isOver ? [.restart] : [.restart, .continue]
-        }
-        else if model.die == nil {
-            [.roll]
-        }
-        else {
-            try! model.possibleMoves().map { move in
-                .move(from: move.from, to: move.to)
-            }
-        }
-    }
-
-    func hasAction(_ action: Action) -> Bool {
-        actions.contains(action)
+    func hasAction(_ action: Game.Action) -> Bool {
+        model.actions.contains(action)
     }
 
     func hasMove(from field: Game.Field) -> Bool {
-        moveTargets[field] != nil
+        model.target(from: field) != nil
     }
 
-    private var hasMoves: Bool { !moveTargets.isEmpty }
-
-    private var moveTargets: [Game.Field: Game.Field] {
-        Dictionary(uniqueKeysWithValues: actions.compactMap { action in
-            if case .move(let from, let to) = action { (from, to) } else { nil }
-        })
+    private var hasMoves: Bool {
+        model.actions.contains { action in
+            if case .move = action { true } else { false }
+        }
     }
 
     // Presented state
@@ -51,7 +30,9 @@ final class GameViewModel {
 
     var presented: PresentedState { presenter.state }
 
-    var shouldDisableInput: Bool { presenter.isPresenting }
+    var isPresenting: Bool { presenter.isPresenting }
+
+    var shouldDisableInput: Bool { isPresenting }
 
     var dieRotation: Double { presenter.dieRotation }
 
@@ -74,6 +55,7 @@ final class GameViewModel {
     }
 
     func resume() {
+        try! model.apply(.resume)
         presenter.present(game: model)
     }
 
@@ -81,7 +63,7 @@ final class GameViewModel {
         let before = model
 
         do {
-            try model.roll(die)
+            try model.roll(die) // TODO: replace with apply once the events report the rolled die
             presenter.present(roll: die, canMove: hasMoves, from: before, to: model)
         } catch {
             print(error)
@@ -89,15 +71,13 @@ final class GameViewModel {
     }
 
     func move(from field: Game.Field) {
-        let move = (from: field, to: moveTargets[field]!)
+        let move = (from: field, to: model.target(from: field)!)
 
         let before = model
 
         do {
-            try model.move(field: move.from)
-
-            let hasPlayerFinished = model.finishedPlayers.count > before.finishedPlayers.count
-            presenter.present(move: move, hasPlayerFinished: hasPlayerFinished, from: before, to: model)
+            try model.apply(.move(from: move.from, to: move.to))
+            presenter.present(move: move, from: before, to: model)
         } catch {
             print(error)
         }

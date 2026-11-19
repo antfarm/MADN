@@ -33,16 +33,21 @@ public struct Game: Codable {
         state.board.player(at: field)
     }
 
-    public func possibleMoves() throws -> [(from: Field, to: Field)] {
-        try Rules.possibleMoves(in: state)
+    public var actions: [Action] {
+        Rules.actions(in: state)
     }
 
-    public mutating func roll(_ die: DieValue = .random()) throws {
+    public func target(from field: Field) -> Field? {
+        Rules.target(from: field, in: state)
+    }
+
+    public mutating func apply(_ action: Action) throws {
+        state = try Rules.apply(action, in: state)
+    }
+
+    // TODO: remove once the events report the rolled die; until then, the app needs to know it
+    public mutating func roll(_ die: DieValue) throws {
         state = try Rules.roll(die, in: state)
-    }
-
-    public mutating func move(field: Field) throws {
-        state = try Rules.move(field: field, in: state)
     }
 }
 
@@ -57,7 +62,7 @@ public enum GameError: Error, Equatable, CustomStringConvertible {
     case gameOver
     case dieNotRolled
     case dieAlreadyRolled
-    case cannotMove(Game.Field)
+    case actionNotOffered
 
     public var description: String {
         switch self {
@@ -71,7 +76,7 @@ public enum GameError: Error, Equatable, CustomStringConvertible {
         case .gameOver: "The game is over"
         case .dieNotRolled: "Die not rolled"
         case .dieAlreadyRolled: "Die already rolled"
-        case .cannotMove(let field): "\(field) cannot move"
+        case .actionNotOffered: "Action not offered"
         }
     }
 }

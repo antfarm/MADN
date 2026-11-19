@@ -34,6 +34,12 @@ extension State {
     }
 
     func moved(_ field: Field) throws -> State {
-        try Rules.move(field: field, in: self)
+        let target = try Rules.possibleMoves(in: self).first { $0.from == field }!.to
+
+        return try Rules.move(from: field, to: target, in: self)
+    }
+
+    func resumed() -> State {
+        try! Rules.resume(in: self)
     }
 }

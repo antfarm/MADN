@@ -2,6 +2,12 @@ extension Game {
 
     typealias Move = (from: Field, to: Field)
 
+    public enum Action: Equatable {
+        case roll
+        case move(from: Field, to: Field)
+        case resume
+    }
+
     enum Rules {
 
         static func initialPieces(for players: Set<Player>) throws -> PiecePositions {
@@ -22,6 +28,10 @@ extension Game {
 
         static func isGameOver(in state: State) -> Bool {
             activePlayers(in: state).isEmpty
+        }
+
+        static func hasPlayerFinished(in state: State) -> Bool {
+            finishedPlayers(in: state).contains(state.player)
         }
 
         static func possibleMoves(in state: State) throws -> [Move] {
@@ -65,6 +75,42 @@ extension Game {
             return moves
         }
 
+        static func actions(in state: State) -> [Action] {
+            if isGameOver(in: state) {
+                []
+            }
+            else if hasPlayerFinished(in: state) {
+                [.resume]
+            }
+            else if state.die == nil {
+                [.roll]
+            }
+            else {
+                try! possibleMoves(in: state).map { move in
+                    .move(from: move.from, to: move.to)
+                }
+            }
+        }
+
+        static func target(from field: Field, in state: State) -> Field? {
+            for case .move(field, let target) in actions(in: state) {
+                return target
+            }
+
+            return nil
+        }
+
+        static func apply(_ action: Action, in state: State) throws -> State {
+            switch action {
+            case .roll:
+                try roll(.random(), in: state)
+            case .move(let from, let to):
+                try move(from: from, to: to, in: state)
+            case .resume:
+                try resume(in: state)
+            }
+        }
+
         static func roll(_ die: DieValue, in state: State) throws -> State {
             guard !isGameOver(in: state) else {
                 throw GameError.gameOver
@@ -95,9 +141,9 @@ extension Game {
             return state
         }
 
-        static func move(field: Field, in state: State) throws -> State {
-            guard let target = try possibleMoves(in: state).first(where: { $0.from == field })?.to else {
-                throw GameError.cannotMove(field)
+        static func move(from field: Field, to target: Field, in state: State) throws -> State {
+            guard actions(in: state).contains(.move(from: field, to: target)) else {
+                throw GameError.actionNotOffered
             }
 
             var state = state
@@ -109,6 +155,19 @@ extension Game {
 
             try state.board.move(from: field, to: target)
 
+            if !hasPlayerFinished(in: state) {
+                advanceTurn(in: &state)
+            }
+
+            return state
+        }
+
+        static func resume(in state: State) throws -> State {
+            guard hasPlayerFinished(in: state) else {
+                throw GameError.actionNotOffered
+            }
+
+            var state = state
             advanceTurn(in: &state)
             return state
         }

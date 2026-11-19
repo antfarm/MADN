@@ -43,12 +43,12 @@ struct NewGame {
         #expect(game.player == .three)
     }
 
-    @Test("rolling shows a value from 1 to 6")
+    @Test("rolling shows a value")
     func roll() throws {
         var game = try Game(pieces: [.one: ["05"], .two: ["1A"]], player: .one) // any roll can move
-        try game.roll()
+        try game.apply(.roll)
 
-        #expect(try (1...6).contains(#require(game.die).rawValue))
+        #expect(game.die != nil)
     }
 }
 
@@ -58,8 +58,9 @@ struct SavedGame {
     @Test("can be serialized and deserialized")
     func serialization() throws {
         var game = try Game(pieces: [.one: ["05"], .three: ["2A"]], player: .three)
-        try game.roll(.three) // passes: first of three tries
-        try game.roll(.six)
+        game.state = game.state
+            .rolled(.three) // passes: first of three tries
+            .rolled(.six)
 
         let serializedGame = try JSONEncoder().encode(game)
         let deserializedGame = try JSONDecoder().decode(Game.self, from: serializedGame)

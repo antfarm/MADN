@@ -12,7 +12,6 @@ extension GameViewModel {
         private(set) var player: Game.Player
         private(set) var die: Int?
         private var pieces: [Game.Field: Game.Player]
-        private(set) var hasPlayerFinished = false
 
         init(game: Game) {
             player = game.player
@@ -43,13 +42,6 @@ extension GameViewModel {
         func withPieceReplaced(at field: Game.Field, by player: Game.Player) -> PresentedState {
             var state = self
             state.pieces[field] = player
-            return state
-        }
-
-        func withPlayer(_ player: Game.Player, finished: Bool = false) -> PresentedState {
-            var state = self
-            state.player = player
-            state.hasPlayerFinished = finished
             return state
         }
     }
@@ -92,7 +84,7 @@ extension GameViewModel {
             animate(sequence: frames)
         }
 
-        func present(move: (from: Game.Field, to: Game.Field), hasPlayerFinished: Bool, from gameBefore: Game, to gameAfter: Game) {
+        func present(move: (from: Game.Field, to: Game.Field), from gameBefore: Game, to gameAfter: Game) {
             let path = gameBefore.player.path
 
             let fromIndex = path.firstIndex(of: move.from)
@@ -117,20 +109,7 @@ extension GameViewModel {
                 (state: state, duration: 0.2)
             }
 
-            // if this is the player's finishing move, do not advance the turn or change the die
-
-            func stateBeforeAdvancingTurn() -> PresentedState {
-                PresentedState(game: gameAfter)
-                    .withPlayer(gameBefore.player, finished: true)
-                    .withDie(gameBefore.die)
-            }
-
-            let finalFrame = if hasPlayerFinished {
-                (state: stateBeforeAdvancingTurn(), duration: 0.2)
-            }
-            else {
-                (state: PresentedState(game: gameAfter), duration: 0.2)
-            }
+            let finalFrame = (state: PresentedState(game: gameAfter), duration: 0.2)
 
             let frames = stepFrames + [finalFrame]
 
