@@ -4,8 +4,9 @@ public struct Game: Codable {
 
     public init(
         players: Set<Player> = Set(Player.allCases),
-        player: Player = .one
+        player: Player? = nil
     ) throws {
+        let player = player ?? Player.allCases.first(where: players.contains) ?? .one
         try self.init(pieces: Rules.initialPieces(for: players), player: player)
     }
 

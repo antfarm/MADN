@@ -43,6 +43,13 @@ struct NewGame {
         #expect(game.player == .three)
     }
 
+    @Test("without a chosen player, the first player in seating order starts")
+    func defaultStartingPlayer() throws {
+        let game = try Game(players: [.two, .four])
+
+        #expect(game.player == .two)
+    }
+
     @Test("rolling shows the rolled value")
     func roll() throws {
         var game = try Game(pieces: [.one: ["05"], .two: ["1A"]], player: .one) // any roll can move
