@@ -32,7 +32,8 @@ struct BoardView: View {
                                 onTap: { game.move(from: field) }
                             )
                             .disabled(!game.canMove(from: field))
-                        } else {
+                        }
+                        else {
                             Color.clear
                         }
                     }
