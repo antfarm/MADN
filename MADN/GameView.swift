@@ -26,7 +26,7 @@ struct GameView: View {
             .overlay {
                 switch step {
                 case .selectPlayers:
-                    PlayerDialog(title: "Who plays?", buttonTitle: "OK",
+                    PlayerDialog(title: "Wer spielt mit?", buttonTitle: "Weiter",
                                  players: Game.Player.allCases, color: game.color(for:),
                                  minCount: 2, maxCount: nil, selected: game.players,
                                  onSelect: { players in
@@ -35,7 +35,7 @@ struct GameView: View {
                         step = .selectStartingPlayer
                     }
                 case .selectStartingPlayer:
-                    PlayerDialog(title: "Who goes first?", buttonTitle: "OK",
+                    PlayerDialog(title: "Wer fängt an?", buttonTitle: "Los geht's",
                                  players: Game.Player.allCases.filter(game.players.contains), color: game.color(for:),
                                  minCount: 1, maxCount: 1, selected: [game.presented.player],
                                  onSelect: { game = GameViewModel(players: game.players, player: $0.first!) }) {
@@ -43,13 +43,13 @@ struct GameView: View {
                     }
                 case .playing:
                     if game.hasPlayerFinished {
-                        Dialog(title: "New Game?",
-                               ok: ("OK", {
+                        Dialog(title: "Neues Spiel?",
+                               ok: ("Neues Spiel", {
                                    game = GameViewModel()
                                    step = .selectPlayers
                                }),
                                cancel: game.canResume
-                                   ? ("Continue", { game.resume() })
+                                   ? ("Weiterspielen", { game.resume() })
                                    : nil) {}
                     }
                 }
@@ -66,13 +66,13 @@ struct GameView: View {
             }
             .overlay {
                 if isQuitting {
-                    Dialog(title: "New Game?",
-                           ok: ("OK", {
+                    Dialog(title: "Neues Spiel?",
+                           ok: ("Neues Spiel", {
                                isQuitting = false
                                game = GameViewModel()
                                step = .selectPlayers
                            }),
-                           cancel: ("Continue", { isQuitting = false })) {}
+                           cancel: ("Weiterspielen", { isQuitting = false })) {}
                 }
             }
     }
@@ -99,7 +99,8 @@ struct Dialog<Content: View>: View {
                 }
             }
             .font(.title)
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.borderless)
+            .tint(.orange)
         }
         .frame(minWidth: 320)
         .padding(32)
@@ -168,34 +169,8 @@ struct UnstyledButtonStyle: ButtonStyle {
     }
 }
 
-#Preview {
+#Preview("New game") {
     GameView()
-}
-
-#Preview("Select players") {
-    let game = GameViewModel()
-
-    PlayerDialog(title: "Who plays?", buttonTitle: "OK",
-                 players: Game.Player.allCases, color: game.color(for:),
-                 minCount: 2, maxCount: nil, selected: Set(Game.Player.allCases),
-                 onSelect: { _ in }) {}
-}
-
-#Preview("Select starting player") {
-    let game = GameViewModel()
-
-    PlayerDialog(title: "Who starts?", buttonTitle: "OK",
-                 players: [.one, .three, .four], color: game.color(for:),
-                 minCount: 1, maxCount: 1, selected: [.one],
-                 onSelect: { _ in }) {}
-}
-
-#Preview("Player finished") {
-    Dialog(title: "New Game?", ok: ("OK", {}), cancel: ("Continue", {})) {}
-}
-
-#Preview("Game over") {
-    Dialog(title: "New Game?", ok: ("OK", {})) {}
 }
 
 #Preview("Finishing player") {
