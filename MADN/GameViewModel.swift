@@ -49,12 +49,11 @@ final class GameViewModel {
         presenter = Presenter(game: model)
     }
 
-    // Game actions
-
-    func start(players: Set<Game.Player>, player: Game.Player) {
-        model = try! Game(players: players, player: player)
-        presenter.present(game: model)
+    convenience init(players: Set<Game.Player>, player: Game.Player? = nil) {
+        self.init(game: try! Game(players: players, player: player))
     }
+
+    // Game actions
 
     func roll(_ die: Game.DieValue = .random()) {
         let before = model

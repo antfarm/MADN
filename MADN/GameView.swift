@@ -23,7 +23,7 @@ struct GameView: View {
                                  players: Game.Player.allCases, color: game.color(for:),
                                  minCount: 2, maxCount: nil, selected: game.players,
                                  onSelect: { players in
-                                     game.start(players: players, player: Game.Player.allCases.first(where: players.contains)!)
+                                     game = GameViewModel(players: players)
                                  }) {
                         step = .selectStartingPlayer
                     }
@@ -31,7 +31,7 @@ struct GameView: View {
                     PlayerDialog(title: "Who goes first?", buttonTitle: "OK",
                                  players: Game.Player.allCases.filter(game.players.contains), color: game.color(for:),
                                  minCount: 1, maxCount: 1, selected: [game.presented.player],
-                                 onSelect: { game.start(players: game.players, player: $0.first!) }) {
+                                 onSelect: { game = GameViewModel(players: game.players, player: $0.first!) }) {
                         step = .playing
                     }
                 case .playing:
