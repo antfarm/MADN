@@ -35,7 +35,7 @@ struct GameView: View {
                         step = .selectStartingPlayer
                     }
                 case .selectStartingPlayer:
-                    PlayerDialog(title: "Wer fängt an?", buttonTitle: "Los geht's",
+                    PlayerDialog(title: "Wer fängt an?", buttonTitle: "Los",
                                  players: Game.Player.allCases.filter(game.players.contains), color: game.color(for:),
                                  minCount: 1, maxCount: 1, selected: [game.presented.player],
                                  onSelect: { game = GameViewModel(players: game.players, player: $0.first!) }) {
