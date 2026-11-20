@@ -8,6 +8,8 @@ final class GameViewModel {
 
     private var model: Game
 
+    var players: Set<Game.Player> { model.players }
+
     var isOver: Bool { model.isOver }
 
     var canRoll: Bool {

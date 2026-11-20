@@ -5,40 +5,49 @@ struct GameView: View {
 
     private enum Step {
         case selectPlayers
-        case selectStartingPlayer(players: Set<Game.Player>)
+        case selectStartingPlayer
         case playing
     }
 
     @State private var game = GameViewModel()
+
     @State private var step = Step.selectPlayers
 
     var body: some View {
-        switch step {
-        case .selectPlayers:
-            PlayerDialog(title: "Who plays?", buttonTitle: "OK",
-                         players: Game.Player.allCases, color: game.color(for:),
-                         minCount: 2, maxCount: nil, selected: Set(Game.Player.allCases)) {
-                step = .selectStartingPlayer(players: $0)
-            }
-        case .selectStartingPlayer(let players):
-            let chosenPlayers = Game.Player.allCases.filter(players.contains)
-
-            PlayerDialog(title: "Who goes first?", buttonTitle: "OK",
-                         players: chosenPlayers, color: game.color(for:),
-                         minCount: 1, maxCount: 1, selected: [chosenPlayers.first!]) {
-                game.start(players: players, player: $0.first!)
-                step = .playing
-            }
-        case .playing:
-            BoardView(game: game)
-                .overlay {
-                    if (game.canResume || game.isOver) && !game.isPresenting { // wait for piece animation to finish
+        BoardView(game: game, hidesDie: step == .selectPlayers)
+            .disabled(step != .playing)
+            .overlay {
+                switch step {
+                case .selectPlayers:
+                    PlayerDialog(title: "Who plays?", buttonTitle: "OK",
+                                 players: Game.Player.allCases, color: game.color(for:),
+                                 minCount: 2, maxCount: nil, selected: game.players,
+                                 onSelect: { players in
+                                     game.start(players: players, player: Game.Player.allCases.first(where: players.contains)!)
+                                 }) {
+                        step = .selectStartingPlayer
+                    }
+                case .selectStartingPlayer:
+                    PlayerDialog(title: "Who goes first?", buttonTitle: "OK",
+                                 players: Game.Player.allCases.filter(game.players.contains), color: game.color(for:),
+                                 minCount: 1, maxCount: 1, selected: [game.presented.player],
+                                 onSelect: { game.start(players: game.players, player: $0.first!) }) {
+                        step = .playing
+                    }
+                case .playing:
+                    if !game.isPresenting // wait for move animation to finish
+                        && (game.canResume || game.isOver)  {
                         Dialog(title: "New Game?",
-                               ok: ("OK", { step = .selectPlayers }),
-                               cancel: game.canResume ? ("Continue", { game.resume() }) : nil) {}
+                               ok: ("OK", {
+                                   game = GameViewModel()
+                                   step = .selectPlayers
+                               }),
+                               cancel: game.canResume
+                                   ? ("Continue", { game.resume() })
+                                   : nil) {}
                     }
                 }
-        }
+            }
     }
 }
 
@@ -79,30 +88,33 @@ struct PlayerDialog: View {
     let minCount: Int
     let maxCount: Int?
 
-    @State var selected: Set<Game.Player>
-
-    let onOK: (Set<Game.Player>) -> Void
+    let selected: Set<Game.Player>
+    let onSelect: (Set<Game.Player>) -> Void
+    let onOK: () -> Void
 
     var body: some View {
-        Dialog(title: title, ok: (buttonTitle, { onOK(selected) })) {
+        Dialog(title: title, ok: (buttonTitle, onOK)) {
             HStack {
                 ForEach(players, id: \.self) { player in
-                    PlayerButton(color: color(player), isSelected: selected.contains(player), onTap: { tap(player) })
+                    PlayerButton(color: color(player), isSelected: selected.contains(player), onTap: { onSelect(selection(tapping: player)) })
                         .frame(width: 100, height: 100)
                 }
             }
         }
     }
 
-    private func tap(_ player: Game.Player) {
+    private func selection(tapping player: Game.Player) -> Set<Game.Player> {
         if selected.contains(player) {
-            if selected.count > minCount { selected.remove(player) }
+            selected.count > minCount ? selected.subtracting([player]) : selected
         }
         else if maxCount == 1 {
-            selected = [player]
+            [player]
         }
         else if selected.count < maxCount ?? players.count {
-            selected.insert(player)
+            selected.union([player])
+        }
+        else {
+            selected
         }
     }
 }
@@ -144,13 +156,19 @@ extension GameView {
 #Preview("Select players") {
     let game = GameViewModel()
 
-    PlayerDialog(title: "Who plays?", buttonTitle: "OK", players: Game.Player.allCases, color: game.color(for:), minCount: 2, maxCount: nil, selected: Set(Game.Player.allCases)) { _ in }
+    PlayerDialog(title: "Who plays?", buttonTitle: "OK",
+                 players: Game.Player.allCases, color: game.color(for:),
+                 minCount: 2, maxCount: nil, selected: Set(Game.Player.allCases),
+                 onSelect: { _ in }) {}
 }
 
 #Preview("Select starting player") {
     let game = GameViewModel()
 
-    PlayerDialog(title: "Who starts?", buttonTitle: "OK", players: [.one, .three, .four], color: game.color(for:), minCount: 1, maxCount: 1, selected: [.one]) { _ in }
+    PlayerDialog(title: "Who starts?", buttonTitle: "OK",
+                 players: [.one, .three, .four], color: game.color(for:),
+                 minCount: 1, maxCount: 1, selected: [.one],
+                 onSelect: { _ in }) {}
 }
 
 #Preview("Player finished") {

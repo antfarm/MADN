@@ -6,6 +6,7 @@ struct BoardView: View {
     private static let cellSize: CGFloat = 100
 
     let game: GameViewModel
+    var hidesDie = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -47,16 +48,18 @@ struct BoardView: View {
             TrackLine(fieldCenters: fieldCenters)
         }
         .overlay(alignment: game.corner(for: game.presented.player)) {
-            DieView(
-                value: game.presented.die,
-                color: game.color(for: game.presented.player),
-                onRoll: { game.roll() }
-            )
-            .disabled(!game.canRoll)
-            .rotationEffect(.degrees(game.dieRotation))
-            .rotationEffect(game.rotation(for: game.presented.player))
-            .frame(width: Self.cellSize, height: Self.cellSize)
-            .padding(2.25 * Self.cellSize)
+            if !hidesDie {
+                DieView(
+                    value: game.presented.die,
+                    color: game.color(for: game.presented.player),
+                    onRoll: { game.roll() }
+                )
+                .disabled(!game.canRoll)
+                .rotationEffect(.degrees(game.dieRotation))
+                .rotationEffect(game.rotation(for: game.presented.player))
+                .frame(width: Self.cellSize, height: Self.cellSize)
+                .padding(2.25 * Self.cellSize)
+            }
         }
         .disabled(game.shouldDisableInput)
         .scaleEffect(0.9)
