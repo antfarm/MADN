@@ -9,9 +9,14 @@ struct GameView: View {
         case playing
     }
 
-    @State private var game = GameViewModel()
+    @State private var game: GameViewModel
 
-    @State private var step = Step.selectPlayers
+    @State private var step: Step
+
+    init(game: Game? = nil) {
+        self.game = GameViewModel(game: game ?? (try! Game()))
+        step = game == nil ? .selectPlayers : .playing
+    }
 
     var body: some View {
         BoardView(game: game, hidesDie: step == .selectPlayers)
@@ -140,14 +145,6 @@ struct UnstyledButtonStyle: ButtonStyle {
     }
 }
 
-extension GameView {
-
-    fileprivate init(playing game: GameViewModel) {
-        _game = State(initialValue: game)
-        _step = State(initialValue: .playing)
-    }
-}
-
 #Preview {
     GameView()
 }
@@ -187,5 +184,5 @@ extension GameView {
 
     let game = try! Game(pieces: pieces, player: .one, die: .six)
 
-    GameView(playing: GameViewModel(game: game))
+    GameView(game: game)
 }

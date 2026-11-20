@@ -6,7 +6,12 @@ final class GameViewModel {
 
     // Game state
 
-    private var model: Game
+    private var model: Game {
+        didSet {
+            if model.isOver { Game.deleteSaved() }
+            else { model.save() }
+        }
+    }
 
     var players: Set<Game.Player> { model.players }
 
