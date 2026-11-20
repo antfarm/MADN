@@ -35,8 +35,7 @@ struct GameView: View {
                         step = .playing
                     }
                 case .playing:
-                    if !game.isPresenting // wait for move animation to finish
-                        && (game.canResume || game.isOver)  {
+                    if game.hasPlayerFinished {
                         Dialog(title: "New Game?",
                                ok: ("OK", {
                                    game = GameViewModel()

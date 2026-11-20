@@ -10,8 +10,6 @@ final class GameViewModel {
 
     var players: Set<Game.Player> { model.players }
 
-    var isOver: Bool { model.isOver }
-
     var canRoll: Bool {
         model.actions.contains { action in
             if case .roll = action { true } else { false }
@@ -37,6 +35,8 @@ final class GameViewModel {
     var shouldDisableInput: Bool { isPresenting }
 
     var dieRotation: Double { presenter.dieRotation }
+
+    var hasPlayerFinished: Bool { presented.hasPlayerFinished }
 
     func hasPiece(at field: Game.Field) -> Bool {
         presented.piece(at: field) != nil

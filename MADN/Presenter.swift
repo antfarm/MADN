@@ -13,6 +13,8 @@ extension GameViewModel {
         private(set) var die: Int?
         private var pieces: [Game.Field: Game.Player]
 
+        let hasPlayerFinished: Bool
+
         init(game: Game) {
             player = game.player
             die = game.die?.rawValue
@@ -21,6 +23,8 @@ extension GameViewModel {
                 guard let player = game.player(at: field) else { return nil }
                 return (field, player)
             })
+
+            hasPlayerFinished = game.finishedPlayers.contains(game.player)
         }
 
         func piece(at field: Game.Field) -> Game.Player? {
