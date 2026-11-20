@@ -13,6 +13,8 @@ struct GameView: View {
 
     @State private var step: Step
 
+    @State private var isQuitting = false
+
     init(game: Game? = nil) {
         self.game = GameViewModel(game: game ?? (try! Game()))
         step = game == nil ? .selectPlayers : .playing
@@ -50,6 +52,27 @@ struct GameView: View {
                                    ? ("Continue", { game.resume() })
                                    : nil) {}
                     }
+                }
+            }
+            .overlay(alignment: .topTrailing) {
+                if step == .playing && !game.hasPlayerFinished {
+                    Button { isQuitting = true } label: {
+                        Image(systemName: "xmark")
+                            .font(.largeTitle)
+                    }
+                    .foregroundStyle(.primary)
+                    .padding(32)
+                }
+            }
+            .overlay {
+                if isQuitting {
+                    Dialog(title: "New Game?",
+                           ok: ("OK", {
+                               isQuitting = false
+                               game = GameViewModel()
+                               step = .selectPlayers
+                           }),
+                           cancel: ("Continue", { isQuitting = false })) {}
                 }
             }
     }
