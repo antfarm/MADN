@@ -59,15 +59,13 @@ struct NewGame {
     }
 }
 
-@Suite("A game")
-struct SavedGame {
+@Suite("A serialized game")
+struct SerializedGame {
 
-    @Test("can be serialized and deserialized")
-    func serialization() throws {
+    @Test("keeps its pieces, players and remaining tries")
+    func keepsPiecesPlayersAndTries() throws {
         var game = try Game(pieces: [.one: ["05"], .three: ["2A"]], player: .three)
-        game.state = game.state
-            .rolled(.three) // passes: first of three tries
-            .rolled(.six)
+        game.state = game.state.rolled(.three)
 
         let serializedGame = try JSONEncoder().encode(game)
         let deserializedGame = try JSONDecoder().decode(Game.self, from: serializedGame)
@@ -75,7 +73,22 @@ struct SavedGame {
         #expect(Field.allCases.map(deserializedGame.player(at:)) == Field.allCases.map(game.player(at:)))
         #expect(deserializedGame.state.players == [.one, .three])
         #expect(deserializedGame.player == .three)
+        #expect(deserializedGame.die == nil)
+
+        let afterThirdTry = deserializedGame.state
+            .rolled(.one)
+            .rolled(.two)
+
+        #expect(afterThirdTry.player == .one)
+    }
+
+    @Test("keeps the rolled die")
+    func keepsDie() throws {
+        let game = try Game(pieces: [.one: ["05"], .three: ["2A"]], player: .one, die: .six)
+
+        let serializedGame = try JSONEncoder().encode(game)
+        let deserializedGame = try JSONDecoder().decode(Game.self, from: serializedGame)
+
         #expect(deserializedGame.die == .six)
-        #expect(deserializedGame.state.extraRollsUsed == 1)
     }
 }
