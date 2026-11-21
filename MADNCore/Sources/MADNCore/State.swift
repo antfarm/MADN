@@ -2,18 +2,19 @@ extension Game {
 
     struct State: Codable {
         var board: Board
-        let players: Set<Player>
         var player: Player
         var die: DieValue? = nil
         var extraRollsUsed = 0
 
+        var players: Set<Player> { board.players }
+
         init(pieces: PiecePositions, player: Player, die: DieValue? = nil) throws {
-            guard pieces[player] != nil else {
+            self.board = try Board(pieces: pieces)
+
+            guard board.players.contains(player) else {
                 throw GameError.startingPlayerNotInGame
             }
 
-            self.board = try Board(pieces: pieces)
-            self.players = Set(pieces.keys)
             self.player = player
             self.die = die
         }

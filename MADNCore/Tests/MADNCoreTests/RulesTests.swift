@@ -6,7 +6,7 @@ struct Turn {
 
     @Test("moving after a 6 lets the player roll again")
     func moveAfterSix() throws {
-        let state = try State(pieces: [.one: ["05"], .two: []], player: .one, die: .six)
+        let state = try State(pieces: [.one: ["05"], .two: ["1A"]], player: .one, die: .six)
         let next = try state.moved("05")
 
         #expect(next.player == .one)
@@ -15,7 +15,7 @@ struct Turn {
 
     @Test("moving advances the turn after anything but a 6", arguments: [.one, .two, .three, .four, .five] as [DieValue])
     func moveAdvancesTurn(die: DieValue) throws {
-        let state = try State(pieces: [.one: ["05"], .two: []], player: .one, die: die)
+        let state = try State(pieces: [.one: ["05"], .two: ["1A"]], player: .one, die: die)
         let next = try state.moved("05")
 
         #expect(next.player == .two)
@@ -87,7 +87,7 @@ struct Turn {
 
     @Test("passing advances the turn when no move is possible")
     func passWithoutMove() throws {
-        let state = try State(pieces: [.one: ["0d"], .two: []], player: .one)
+        let state = try State(pieces: [.one: ["0d"], .two: ["1A"]], player: .one)
             .rolled(.one)
 
         #expect(state.player == .two)
@@ -95,7 +95,7 @@ struct Turn {
 
     @Test("a 6 that cannot be used still lets the player roll again")
     func passAfterSix() throws {
-        let state = try State(pieces: [.one: ["0d"], .two: []], player: .one)
+        let state = try State(pieces: [.one: ["0d"], .two: ["1A"]], player: .one)
             .rolled(.six)
 
         #expect(state.player == .one)
@@ -104,7 +104,7 @@ struct Turn {
 
     @Test("passing lets the player roll again when bringing in is the only possible move")
     func passOnlyBringIn() throws {
-        let state = try State(pieces: [.one: ["0A"], .two: []], player: .one)
+        let state = try State(pieces: [.one: ["0A"], .two: ["1A"]], player: .one)
             .rolled(.three)
 
         #expect(state.player == .one)
@@ -113,7 +113,7 @@ struct Turn {
 
     @Test("passing advances the turn when a piece could move with another roll")
     func passWithBlockedPiece() throws {
-        let state = try State(pieces: [.one: ["0A", "39"], .two: []], player: .one)
+        let state = try State(pieces: [.one: ["0A", "39"], .two: ["1A"]], player: .one)
             .rolled(.five)
 
         #expect(state.player == .two)
@@ -121,7 +121,7 @@ struct Turn {
 
     @Test("passing lets the player roll again when home pieces are packed at the end of the home row")
     func passWithPackedHomePiece() throws {
-        let state = try State(pieces: [.one: ["0A", "0d"], .two: []], player: .one)
+        let state = try State(pieces: [.one: ["0A", "0d"], .two: ["1A"]], player: .one)
             .rolled(.three)
 
         #expect(state.player == .one)
@@ -130,7 +130,7 @@ struct Turn {
 
     @Test("passing advances the turn when a home piece could move with another roll")
     func passWithBlockedHomePiece() throws {
-        let state = try State(pieces: [.one: ["0A", "0a"], .two: []], player: .one)
+        let state = try State(pieces: [.one: ["0A", "0a"], .two: ["1A"]], player: .one)
             .rolled(.five)
 
         #expect(state.player == .two)
@@ -138,7 +138,7 @@ struct Turn {
 
     @Test("passing advances the turn after three tries without a 6")
     func passAfterThreeTries() throws {
-        let state = try State(pieces: [.one: ["0A"], .two: []], player: .one)
+        let state = try State(pieces: [.one: ["0A"], .two: ["1A"]], player: .one)
             .rolled(.one)
             .rolled(.two)
             .rolled(.three)

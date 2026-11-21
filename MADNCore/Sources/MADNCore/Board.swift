@@ -11,6 +11,10 @@ extension Game {
             }
         }
 
+        var players: Set<Player> {
+            Set(pieces.values)
+        }
+
         func player(at field: Field) -> Player? {
             pieces[field]
         }
