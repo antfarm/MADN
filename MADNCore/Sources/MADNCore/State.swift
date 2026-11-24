@@ -3,20 +3,35 @@ extension Game {
     struct State: Codable {
         var board: Board
         var player: Player
-        var die: DieValue? = nil
-        var extraRollsUsed = 0
+        var phase: Rules.Phase
 
         var players: Set<Player> { board.players }
 
+        var die: DieValue? {
+            switch phase {
+            case .moving(let die): die
+            case .finished(let die): die
+            case .over(let die): die
+            default: nil
+            }
+        }
+
         init(pieces: PiecePositions, player: Player, die: DieValue? = nil) throws {
-            self.board = try Board(pieces: pieces)
+            board = try Board(pieces: pieces)
 
             guard board.players.contains(player) else {
                 throw GameError.startingPlayerNotInGame
             }
 
             self.player = player
-            self.die = die
+            phase = if let die { .moving(die) } else { .rolling(triesLeft: 3) }
+
+            if Rules.isGameOver(in: self) {
+                phase = .over(die)
+            }
+            else if Rules.hasPlayerFinished(in: self) {
+                phase = .finished(die)
+            }
         }
     }
 

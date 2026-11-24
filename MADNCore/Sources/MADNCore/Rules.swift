@@ -10,6 +10,13 @@ extension Game {
 
     enum Rules {
 
+        enum Phase: Codable {
+            case rolling(triesLeft: Int)
+            case moving(DieValue)
+            case finished(DieValue?)
+            case over(DieValue?)
+        }
+
         static func initialPieces(for players: Set<Player>) throws -> PiecePositions {
             guard players.count >= 2 else {
                 throw GameError.tooFewPlayers
@@ -34,9 +41,7 @@ extension Game {
             finishedPlayers(in: state).contains(state.player)
         }
 
-        private static func possibleMoves(in state: State) -> [Move] {
-            guard let die = state.die else { return [] }
-
+        private static func possibleMoves(with die: DieValue, in state: State) -> [Move] {
             let moves: [Move] = state.board.pieces(for: state.player).compactMap { field in
                 if field.isOut {
                     guard die == .six else { return nil } // bring in only with a 6
@@ -76,19 +81,17 @@ extension Game {
         }
 
         static func actions(in state: State) -> [Action] {
-            if isGameOver(in: state) {
-                []
-            }
-            else if hasPlayerFinished(in: state) {
-                [.resume]
-            }
-            else if state.die == nil {
+            switch state.phase {
+            case .rolling:
                 DieValue.allCases.map(Action.roll)
-            }
-            else {
-                possibleMoves(in: state).map { move in
+            case .moving(let die):
+                possibleMoves(with: die, in: state).map { move in
                     .move(from: move.from, to: move.to)
                 }
+            case .finished:
+                [.resume]
+            case .over:
+                []
             }
         }
 
@@ -105,39 +108,39 @@ extension Game {
                 throw GameError.actionNotOffered
             }
 
-            return switch action {
-            case .roll(let die):
-                roll(die, in: state)
-            case .move(let from, let to):
-                try move(from: from, to: to, in: state)
-            case .resume:
+            return switch (state.phase, action) {
+            case (.rolling(let triesLeft), .roll(let die)):
+                roll(die, triesLeft: triesLeft, in: state)
+            case (.moving(let die), .move(let from, let to)):
+                try move(from: from, to: to, with: die, in: state)
+            case (.finished, .resume):
                 resume(in: state)
+            default:
+                throw GameError.actionNotOffered
             }
         }
 
-        private static func roll(_ die: DieValue, in state: State) -> State {
+        private static func roll(_ die: DieValue, triesLeft: Int, in state: State) -> State {
             var state = state
-            state.die = die
+            let pieces = state.board.pieces(for: state.player)
 
-            if possibleMoves(in: state).isEmpty {
-                let pieces = state.board.pieces(for: state.player)
+            if !possibleMoves(with: die, in: state).isEmpty {
+                state.phase = .moving(die)
+            }
+            else if triesLeft > 1 // three rolls not used up
+                && pieces.contains(where: \.isOut) // staged pieces left
+                && !hasPieceInPlay(in: state) { // nothing else could move
 
-                if state.extraRollsUsed < 2 // three rolls not used up
-                    && pieces.contains(where: \.isOut) // staged pieces left
-                    && !hasPieceInPlay(in: state) { // nothing else could move
-
-                    state.extraRollsUsed += 1
-                    state.die = nil // roll again
-                }
-                else {
-                    advanceTurn(in: &state)
-                }
+                state.phase = .rolling(triesLeft: triesLeft - 1) // roll again
+            }
+            else {
+                advanceTurn(after: die, in: &state)
             }
 
             return state
         }
 
-        private static func move(from field: Field, to target: Field, in state: State) throws -> State {
+        private static func move(from field: Field, to target: Field, with die: DieValue, in state: State) throws -> State {
             var state = state
 
             if let opponent = state.board.player(at: target) {
@@ -147,8 +150,14 @@ extension Game {
 
             try state.board.move(from: field, to: target)
 
-            if !hasPlayerFinished(in: state) {
-                advanceTurn(in: &state)
+            if isGameOver(in: state) {
+                state.phase = .over(die)
+            }
+            else if hasPlayerFinished(in: state) {
+                state.phase = .finished(die)
+            }
+            else {
+                advanceTurn(after: die, in: &state)
             }
 
             return state
@@ -156,7 +165,7 @@ extension Game {
 
         private static func resume(in state: State) -> State {
             var state = state
-            advanceTurn(in: &state)
+            advanceTurn(after: nil, in: &state)
             return state
         }
 
@@ -168,11 +177,10 @@ extension Game {
                 || homePieces != Set(state.player.homeFields.suffix(homePieces.count)) // some in the home row can still move
         }
 
-        private static func advanceTurn(in state: inout State) {
-            let shouldRollAgain = state.die == .six && activePlayers(in: state).contains(state.player)
+        private static func advanceTurn(after die: DieValue?, in state: inout State) {
+            let shouldRollAgain = die == .six && activePlayers(in: state).contains(state.player)
 
-            state.die = nil
-            state.extraRollsUsed = 0
+            state.phase = .rolling(triesLeft: 3)
 
             if shouldRollAgain || isGameOver(in: state) { return }
 
