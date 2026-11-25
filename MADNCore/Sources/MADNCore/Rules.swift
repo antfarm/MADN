@@ -13,8 +13,8 @@ extension Game {
         enum Phase: Codable {
             case rolling(triesLeft: Int)
             case moving(DieValue)
-            case finished(DieValue?)
-            case over(DieValue?)
+            case finished
+            case over
         }
 
         static func initialPieces(for players: Set<Player>) throws -> PiecePositions {
@@ -151,10 +151,10 @@ extension Game {
             try state.board.move(from: field, to: target)
 
             if isGameOver(in: state) {
-                state.phase = .over(die)
+                state.phase = .over
             }
             else if hasPlayerFinished(in: state) {
-                state.phase = .finished(die)
+                state.phase = .finished
             }
             else {
                 advanceTurn(after: die, in: &state)

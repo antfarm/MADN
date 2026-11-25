@@ -8,12 +8,7 @@ extension Game {
         var players: Set<Player> { board.players }
 
         var die: DieValue? {
-            switch phase {
-            case .moving(let die): die
-            case .finished(let die): die
-            case .over(let die): die
-            default: nil
-            }
+            if case .moving(let die) = phase { die } else { nil }
         }
 
         init(pieces: PiecePositions, player: Player, die: DieValue? = nil) throws {
@@ -27,10 +22,10 @@ extension Game {
             phase = if let die { .moving(die) } else { .rolling(triesLeft: 3) }
 
             if Rules.isGameOver(in: self) {
-                phase = .over(die)
+                phase = .over
             }
             else if Rules.hasPlayerFinished(in: self) {
-                phase = .finished(die)
+                phase = .finished
             }
         }
     }

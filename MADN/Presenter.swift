@@ -113,7 +113,14 @@ extension GameViewModel {
                 (state: state, duration: 0.2)
             }
 
-            let finalFrame = (state: PresentedState(game: gameAfter), duration: 0.2)
+            let stateAfterMoving = PresentedState(game: gameAfter)
+
+            let finalFrame = if stateAfterMoving.hasPlayerFinished {
+                (state: stateAfterMoving.withDie(gameBefore.die), duration: 0.0)
+            }
+            else {
+                (state: stateAfterMoving, duration: 0.2)
+            }
 
             let frames = stepFrames + [finalFrame]
 
