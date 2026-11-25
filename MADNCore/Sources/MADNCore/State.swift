@@ -4,6 +4,7 @@ extension Game {
         var board: Board
         var player: Player
         var phase: Rules.Phase
+        var finishedPlayers: [Player] = []
 
         var players: Set<Player> { board.players }
 
@@ -20,6 +21,7 @@ extension Game {
 
             self.player = player
             phase = if let die { .moving(die) } else { .rolling(triesLeft: 3) }
+            finishedPlayers = Player.allCases.filter { Rules.hasFinished(player: $0, in: self) }
 
             if Rules.isGameOver(in: self) {
                 phase = .over

@@ -29,8 +29,12 @@ extension Game {
             state.players.subtracting(finishedPlayers(in: state))
         }
 
-        static func finishedPlayers(in state: State) -> Set<Player> {
-            state.players.filter { state.board.pieces(for: $0) == Set($0.homeFields) }
+        static func finishedPlayers(in state: State) -> [Player] {
+            state.finishedPlayers
+        }
+
+        static func hasFinished(player: Player, in state: State) -> Bool {
+            state.board.pieces(for: player) == Set(player.homeFields)
         }
 
         static func isGameOver(in state: State) -> Bool {
@@ -149,6 +153,10 @@ extension Game {
             }
 
             try state.board.move(from: field, to: target)
+
+            if hasFinished(player: state.player, in: state) {
+                state.finishedPlayers.append(state.player)
+            }
 
             if isGameOver(in: state) {
                 state.phase = .over

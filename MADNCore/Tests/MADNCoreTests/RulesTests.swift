@@ -306,6 +306,18 @@ struct EndOfGame {
             try Rules.apply(.roll(.three), in: state)
         }
     }
+
+    @Test("the finished players are listed in the order they finished")
+    func finishingOrder() throws {
+        let state = try State(pieces: [.one: ["0b", "0c", "0d", "39"], .two: ["1b", "1c", "1d", "09"], .three: ["25"]], player: .one)
+            .rolled(.one)
+            .moved("39")
+            .resumed()
+            .rolled(.one)
+            .moved("09")
+
+        #expect(state.finishedPlayers == [.one, .two])
+    }
 }
 
 @Suite("The actions")
