@@ -47,7 +47,6 @@ extension Game {
             case over
         }
 
-
         static func actions(in state: State) -> [Action] {
             switch state.phase {
             case .notStarted:
@@ -63,25 +62,78 @@ extension Game {
             }
         }
 
+        private enum Command {
+            case start
+            case resume
+            case end
+
+            case action(Action)
+        }
+
+        static func start(in state: State) throws -> State {
+            var state = state
+            try apply(.start, to: &state)
+            return state
+        }
+
+        static func resume(in state: State) throws -> State {
+            var state = state
+            try apply(.resume, to: &state)
+            return state
+        }
+
+        static func end(in state: State) -> State {
+            var state = state
+            try! apply(.end, to: &state)
+            return state
+        }
+
         static func apply(_ action: Action, to state: inout State) throws {
-            guard actions(in: state).contains(action) else {
+            try apply(.action(action), to: &state)
+        }
+
+        private static func apply(_ command: Command, to state: inout State) throws {
+            if case .action(let action) = command, !actions(in: state).contains(action) {
                 throw GameError.actionNotOffered
             }
 
-            switch (state.phase, action) {
-            case (.rolling, .roll(let die)) where !possibleMoves(with: die, in: state).isEmpty:
-                state.phase = .moving(die)
+            switch (state.phase, command) {
 
-            case (.rolling(let triesLeft), .roll) where triesLeft > 1:
-                state.phase = .rolling(triesLeft: triesLeft - 1)
+            // Game commands
 
-            case (.rolling, .roll(.six)):
+            case (.notStarted, .start):
                 state.phase = .rolling(triesLeft: triesForTurn(in: state))
 
-            case (.rolling, .roll):
-                advanceTurn(in: &state)
+            case (_, .start):
+                throw GameError.alreadyStarted
 
-            case (.moving(let die), .move(let from, let to)):
+
+            case (.paused, .resume):
+                advanceTurn(in: &state)
+                state.phase = .rolling(triesLeft: triesForTurn(in: state))
+
+            case (_, .resume):
+                throw GameError.notPaused
+
+            case (_, .end):
+                state.phase = .over
+
+            // Player actions
+
+            case (.rolling, .action(.roll(let die))) where !possibleMoves(with: die, in: state).isEmpty:
+                state.phase = .moving(die)
+
+            case (.rolling(let triesLeft), .action(.roll)) where triesLeft > 1:
+                state.phase = .rolling(triesLeft: triesLeft - 1)
+
+            case (.rolling, .action(.roll(.six))):
+                state.phase = .rolling(triesLeft: triesForTurn(in: state))
+
+            case (.rolling, .action(.roll)):
+                advanceTurn(in: &state)
+                state.phase = .rolling(triesLeft: triesForTurn(in: state))
+
+            case (.moving(let die), .action(.move(let from, let to))):
                 move(from, to, in: &state)
 
                 switch die {
@@ -96,9 +148,11 @@ extension Game {
 
                 default:
                     advanceTurn(in: &state)
+                    state.phase = .rolling(triesLeft: triesForTurn(in: state))
+
                 }
 
-            default:
+            case (_, .action):
                 throw GameError.actionNotOffered
             }
         }
@@ -120,8 +174,6 @@ extension Game {
             let nextPlayer = state.player.next
             state.player = [nextPlayer, nextPlayer.next, nextPlayer.next.next, state.player]
                 .first(where: activePlayers(in: state).contains)!
-
-            state.phase = .rolling(triesLeft: triesForTurn(in: state))
         }
 
         private static func possibleMoves(with die: DieValue, in state: State) -> [Move] {
@@ -173,32 +225,6 @@ extension Game {
                 || homePieces != Set(state.player.homeFields.suffix(homePieces.count)) // some in the home row can still move
 
             return hasPieceInPlay ? 1 : 3
-        }
-
-        static func start(in state: State) throws -> State {
-            guard case .notStarted = state.phase else {
-                throw GameError.alreadyStarted
-            }
-
-            var state = state
-            state.phase = .rolling(triesLeft: triesForTurn(in: state))
-            return state
-        }
-
-        static func resume(in state: State) throws -> State {
-            guard case .paused = state.phase else {
-                throw GameError.notPaused
-            }
-
-            var state = state
-            advanceTurn(in: &state)
-            return state
-        }
-
-        static func end(in state: State) -> State {
-            var state = state
-            state.phase = .over
-            return state
         }
     }
 }
