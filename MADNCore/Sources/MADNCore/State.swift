@@ -12,6 +12,10 @@ extension Game {
             if case .moving(let die) = phase { die } else { nil }
         }
 
+        var isStarted: Bool {
+            if case .notStarted = phase { false } else { true }
+        }
+
         var isOver: Bool {
             if case .over = phase { true } else { false }
         }
@@ -20,23 +24,47 @@ extension Game {
             if case .paused = phase { true } else { false }
         }
 
-        init(pieces: PiecePositions, player: Player, die: DieValue? = nil) throws {
-            board = try Board(pieces: pieces)
+        init(players: Set<Player>, player: Player? = nil) throws {
+            board = try Board(pieces: Rules.initialPieces(for: players))
+            self.player = try Self.startingPlayer(player, on: board)
+            phase = .notStarted
+        }
 
-            guard board.players.contains(player) else {
-                throw GameError.startingPlayerNotInGame
+        // for tests and previews
+        init(pieces: PiecePositions, player: Player? = nil, die: DieValue? = nil) throws {
+            board = try Board(pieces: pieces)
+            self.player = try Self.startingPlayer(player, on: board)
+
+            phase = if let die {
+                .moving(die)
+            }
+            else {
+                .rolling(triesLeft: 3)
             }
 
-            self.player = player
-            phase = if let die { .moving(die) } else { .rolling(triesLeft: 3) }
-            finishedPlayers = Player.allCases.filter { Rules.hasFinished(player: $0, in: self) }
+            finishedPlayers = Player.allCases.filter { player in
+                players.contains(player) && Rules.hasPlayerFinished(player, in: self)
+            }
 
             if Rules.isGameOver(in: self) {
                 phase = .over
             }
-            else if Rules.hasFinished(player: player, in: self) {
+            else if Rules.hasPlayerFinished(in: self) {
                 phase = .paused
             }
+            else if die == nil {
+                phase = .rolling(triesLeft: Rules.triesForTurn(in: self))
+            }
+        }
+
+        private static func startingPlayer(_ player: Player?, on board: Board) throws -> Player {
+            guard let player = player ?? Player.allCases.first(where: board.players.contains),
+                  board.players.contains(player)
+            else {
+                throw GameError.startingPlayerNotInGame
+            }
+
+            return player
         }
     }
 

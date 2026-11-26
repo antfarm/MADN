@@ -6,13 +6,12 @@ public struct Game: Codable {
         players: Set<Player> = Set(Player.allCases),
         player: Player? = nil
     ) throws {
-        let player = player ?? Player.allCases.first(where: players.contains) ?? .one
-        try self.init(pieces: Rules.initialPieces(for: players), player: player)
+        state = try State(players: players, player: player)
     }
 
     public init( // for tests and previews
         pieces: PiecePositions,
-        player: Player = .one,
+        player: Player? = nil,
         die: DieValue? = nil
     ) throws {
         state = try State(pieces: pieces, player: player, die: die)
@@ -25,6 +24,8 @@ public struct Game: Codable {
     public var activePlayers: Set<Player> { Rules.activePlayers(in: state) }
 
     public var finishedPlayers: [Player] { Rules.finishedPlayers(in: state) }
+
+    public var isStarted: Bool { state.isStarted }
 
     public var isOver: Bool { state.isOver }
 
@@ -45,7 +46,11 @@ public struct Game: Codable {
     }
 
     public mutating func apply(_ action: Action) throws {
-        state = try Rules.apply(action, in: state)
+        try Rules.apply(action, to: &state)
+    }
+
+    public mutating func start() throws {
+        state = try Rules.start(in: state)
     }
 
     public mutating func resume() throws {
@@ -66,6 +71,7 @@ public enum GameError: Error, Equatable, CustomStringConvertible {
     case noPiece(Game.Field)
     case fieldNotOnPath
     case actionNotOffered
+    case alreadyStarted
     case notPaused
 
     public var description: String {
@@ -78,6 +84,7 @@ public enum GameError: Error, Equatable, CustomStringConvertible {
         case .noPiece(let field): "No piece on \(field)"
         case .fieldNotOnPath: "Field not on player's path"
         case .actionNotOffered: "Action not offered"
+        case .alreadyStarted: "Game has already started"
         case .notPaused: "Game is not paused"
         }
     }

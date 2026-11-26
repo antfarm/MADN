@@ -30,13 +30,17 @@ extension State {
     }
 
     func rolled(_ die: DieValue) -> State {
-        try! Rules.apply(.roll(die), in: self)
+        var state = self
+        try! Rules.apply(.roll(die), to: &state)
+        return state
     }
 
     func moved(_ field: Field) throws -> State {
         let target = Rules.target(from: field, in: self)!
 
-        return try Rules.apply(.move(from: field, to: target), in: self)
+        var state = self
+        try Rules.apply(.move(from: field, to: target), to: &state)
+        return state
     }
 
     func resumed() -> State {

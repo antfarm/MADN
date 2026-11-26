@@ -39,6 +39,7 @@ struct GameView: View {
                                  players: Game.Player.allCases.filter(game.players.contains), color: game.color(for:),
                                  minCount: 1, maxCount: 1, selected: [game.presented.player],
                                  onSelect: { game = GameViewModel(players: game.players, player: $0.first!) }) {
+                        game.start()
                         step = .playing
                     }
                 case .playing:

@@ -50,6 +50,44 @@ struct NewGame {
         #expect(game.player == .two)
     }
 
+    @Test("has not started and offers no actions")
+    func notStarted() throws {
+        let game = try Game(players: [.one, .two])
+
+        #expect(!game.isStarted)
+        #expect(game.actions.isEmpty)
+    }
+
+    @Test("starting it lets the starting player roll")
+    func start() throws {
+        var game = try Game(players: [.one, .two], player: .two)
+        try game.start()
+
+        #expect(game.isStarted)
+        #expect(game.player == .two)
+        #expect(game.actions == DieValue.allCases.map(Game.Action.roll))
+    }
+
+    @Test("after starting, the player has three tries to roll a 6")
+    func startWithThreeTries() throws {
+        var game = try Game(players: [.one, .two])
+        try game.start()
+        try game.apply(.roll(.one))
+        try game.apply(.roll(.one))
+
+        #expect(game.player == .one)
+    }
+
+    @Test("cannot be started twice")
+    func startTwice() throws {
+        var game = try Game(players: [.one, .two])
+        try game.start()
+
+        #expect(throws: GameError.alreadyStarted) {
+            try game.start()
+        }
+    }
+
     @Test("rolling shows the rolled value")
     func roll() throws {
         var game = try Game(pieces: [.one: ["05"], .two: ["1A"]], player: .one) // any roll can move

@@ -87,6 +87,11 @@ final class GameViewModel {
         }
     }
 
+    func start() {
+        try! model.start()
+        presenter.present(game: model)
+    }
+
     func resume() {
         try! model.resume()
         presenter.present(game: model)

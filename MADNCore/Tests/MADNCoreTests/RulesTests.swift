@@ -87,15 +87,15 @@ struct Turn {
 
     @Test("passing advances the turn when no move is possible")
     func passWithoutMove() throws {
-        let state = try State(pieces: [.one: ["0d"], .two: ["1A"]], player: .one)
-            .rolled(.one)
+        let state = try State(pieces: [.one: ["0b"], .two: ["1A"]], player: .one)
+            .rolled(.three)
 
         #expect(state.player == .two)
     }
 
     @Test("a 6 that cannot be used still lets the player roll again")
     func passAfterSix() throws {
-        let state = try State(pieces: [.one: ["0d"], .two: ["1A"]], player: .one)
+        let state = try State(pieces: [.one: ["0b"], .two: ["1A"]], player: .one)
             .rolled(.six)
 
         #expect(state.player == .one)
@@ -300,10 +300,10 @@ struct EndOfGame {
 
     @Test("rolling after the game is over is rejected")
     func rollAfterGameOver() throws {
-        let state = try State(pieces: [.one: ["0a", "0b", "0c", "0d"]], player: .one)
+        var state = try State(pieces: [.one: ["0a", "0b", "0c", "0d"]], player: .one)
 
         #expect(throws: GameError.actionNotOffered) {
-            try Rules.apply(.roll(.three), in: state)
+            try Rules.apply(.roll(.three), to: &state)
         }
     }
 
@@ -385,10 +385,10 @@ struct Actions {
 
     @Test("a move that is not offered is rejected")
     func moveNotOffered() throws {
-        let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one, die: .three)
+        var state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one, die: .three)
 
         #expect(throws: GameError.actionNotOffered) {
-            try Rules.apply(.move(from: "05", to: "09"), in: state)
+            try Rules.apply(.move(from: "05", to: "09"), to: &state)
         }
     }
 }
