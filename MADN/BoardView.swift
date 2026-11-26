@@ -62,7 +62,7 @@ struct BoardView: View {
                 .padding(2.25 * Self.cellSize)
             }
         }
-        .disabled(game.shouldDisableInput)
+        .disabled(game.isPresenting)
         .scaleEffect(0.9)
     }
 }

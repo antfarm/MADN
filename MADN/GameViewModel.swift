@@ -33,8 +33,6 @@ final class GameViewModel {
 
     var isPresenting: Bool { presenter.isPresenting }
 
-    var shouldDisableInput: Bool { isPresenting }
-
     var dieRotation: Double { presenter.dieRotation }
 
     var isPaused: Bool { presented.isPaused }
