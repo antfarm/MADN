@@ -12,6 +12,14 @@ extension Game {
             if case .moving(let die) = phase { die } else { nil }
         }
 
+        var isOver: Bool {
+            if case .over = phase { true } else { false }
+        }
+
+        var isPaused: Bool {
+            if case .paused = phase { true } else { false }
+        }
+
         init(pieces: PiecePositions, player: Player, die: DieValue? = nil) throws {
             board = try Board(pieces: pieces)
 
@@ -26,8 +34,8 @@ extension Game {
             if Rules.isGameOver(in: self) {
                 phase = .over
             }
-            else if Rules.hasPlayerFinished(in: self) {
-                phase = .finished
+            else if Rules.hasFinished(player: player, in: self) {
+                phase = .paused
             }
         }
     }

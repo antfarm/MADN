@@ -5,7 +5,6 @@ extension Game {
     public enum Action: Equatable {
         case roll(DieValue)
         case move(from: Field, to: Field)
-        case resume
     }
 
     enum Rules {
@@ -13,7 +12,7 @@ extension Game {
         enum Phase: Codable {
             case rolling(triesLeft: Int)
             case moving(DieValue)
-            case finished
+            case paused
             case over
         }
 
@@ -39,10 +38,6 @@ extension Game {
 
         static func isGameOver(in state: State) -> Bool {
             activePlayers(in: state).isEmpty
-        }
-
-        static func hasPlayerFinished(in state: State) -> Bool {
-            finishedPlayers(in: state).contains(state.player)
         }
 
         private static func possibleMoves(with die: DieValue, in state: State) -> [Move] {
@@ -92,9 +87,7 @@ extension Game {
                 possibleMoves(with: die, in: state).map { move in
                     .move(from: move.from, to: move.to)
                 }
-            case .finished:
-                [.resume]
-            case .over:
+            case .paused, .over:
                 []
             }
         }
@@ -117,8 +110,6 @@ extension Game {
                 roll(die, triesLeft: triesLeft, in: state)
             case (.moving(let die), .move(let from, let to)):
                 try move(from: from, to: to, with: die, in: state)
-            case (.finished, .resume):
-                resume(in: state)
             default:
                 throw GameError.actionNotOffered
             }
@@ -161,8 +152,8 @@ extension Game {
             if isGameOver(in: state) {
                 state.phase = .over
             }
-            else if hasPlayerFinished(in: state) {
-                state.phase = .finished
+            else if Rules.hasFinished(player: state.player, in: state) {
+                state.phase = .paused
             }
             else {
                 advanceTurn(after: die, in: &state)
@@ -171,9 +162,19 @@ extension Game {
             return state
         }
 
-        private static func resume(in state: State) -> State {
+        static func resume(in state: State) throws -> State {
+            guard case .paused = state.phase else {
+                throw GameError.notPaused
+            }
+
             var state = state
             advanceTurn(after: nil, in: &state)
+            return state
+        }
+
+        static func end(in state: State) -> State {
+            var state = state
+            state.phase = .over
             return state
         }
 

@@ -13,7 +13,8 @@ extension GameViewModel {
         private(set) var die: Int?
         private var pieces: [Game.Field: Game.Player]
 
-        let hasPlayerFinished: Bool
+        let isPaused: Bool
+        let isOver: Bool
 
         init(game: Game) {
             player = game.player
@@ -24,7 +25,8 @@ extension GameViewModel {
                 return (field, player)
             })
 
-            hasPlayerFinished = game.finishedPlayers.contains(game.player)
+            isPaused = game.isPaused
+            isOver = game.isOver
         }
 
         func piece(at field: Game.Field) -> Game.Player? {
@@ -115,7 +117,7 @@ extension GameViewModel {
 
             let stateAfterMoving = PresentedState(game: gameAfter)
 
-            let finalFrame = if stateAfterMoving.hasPlayerFinished {
+            let finalFrame = if stateAfterMoving.isPaused || stateAfterMoving.isOver {
                 (state: stateAfterMoving.withDie(gameBefore.die), duration: 0.0)
             }
             else {

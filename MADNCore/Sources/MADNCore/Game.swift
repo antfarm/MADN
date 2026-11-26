@@ -26,7 +26,9 @@ public struct Game: Codable {
 
     public var finishedPlayers: [Player] { Rules.finishedPlayers(in: state) }
 
-    public var isOver: Bool { Rules.isGameOver(in: state) }
+    public var isOver: Bool { state.isOver }
+
+    public var isPaused: Bool { state.isPaused }
 
     public var die: DieValue? { state.die }
 
@@ -45,6 +47,14 @@ public struct Game: Codable {
     public mutating func apply(_ action: Action) throws {
         state = try Rules.apply(action, in: state)
     }
+
+    public mutating func resume() throws {
+        state = try Rules.resume(in: state)
+    }
+
+    public mutating func end() {
+        state = Rules.end(in: state)
+    }
 }
 
 public enum GameError: Error, Equatable, CustomStringConvertible {
@@ -56,6 +66,7 @@ public enum GameError: Error, Equatable, CustomStringConvertible {
     case noPiece(Game.Field)
     case fieldNotOnPath
     case actionNotOffered
+    case notPaused
 
     public var description: String {
         switch self {
@@ -67,6 +78,7 @@ public enum GameError: Error, Equatable, CustomStringConvertible {
         case .noPiece(let field): "No piece on \(field)"
         case .fieldNotOnPath: "Field not on player's path"
         case .actionNotOffered: "Action not offered"
+        case .notPaused: "Game is not paused"
         }
     }
 }

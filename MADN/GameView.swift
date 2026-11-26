@@ -42,20 +42,21 @@ struct GameView: View {
                         step = .playing
                     }
                 case .playing:
-                    if game.hasPlayerFinished {
+                    if game.isPaused || game.isOver {
                         Dialog(title: "Neues Spiel?",
                                ok: ("Neues Spiel", {
+                                   game.end()
                                    game = GameViewModel()
                                    step = .selectPlayers
                                }),
-                               cancel: game.canResume
+                               cancel: game.isPaused
                                    ? ("Weiterspielen", { game.resume() })
                                    : nil) {}
                     }
                 }
             }
             .overlay(alignment: .topTrailing) {
-                if step == .playing && !game.hasPlayerFinished {
+                if step == .playing && !(game.isPaused || game.isOver) {
                     Button { isQuitting = true } label: {
                         Image(systemName: "xmark")
                             .font(.largeTitle)
@@ -69,6 +70,7 @@ struct GameView: View {
                     Dialog(title: "Neues Spiel?",
                            ok: ("Neues Spiel", {
                                isQuitting = false
+                               game.end()
                                game = GameViewModel()
                                step = .selectPlayers
                            }),

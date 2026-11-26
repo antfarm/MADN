@@ -40,6 +40,6 @@ extension State {
     }
 
     func resumed() -> State {
-        try! Rules.apply(.resume, in: self)
+        try! Rules.resume(in: self)
     }
 }

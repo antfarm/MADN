@@ -25,10 +25,6 @@ final class GameViewModel {
         model.target(from: field) != nil
     }
 
-    var canResume: Bool {
-        model.actions.contains(.resume)
-    }
-
     // Presented state
 
     private let presenter: Presenter
@@ -41,7 +37,9 @@ final class GameViewModel {
 
     var dieRotation: Double { presenter.dieRotation }
 
-    var hasPlayerFinished: Bool { presented.hasPlayerFinished }
+    var isPaused: Bool { presented.isPaused }
+
+    var isOver: Bool { presented.isOver }
 
     func hasPiece(at field: Game.Field) -> Bool {
         presented.piece(at: field) != nil
@@ -90,8 +88,12 @@ final class GameViewModel {
     }
 
     func resume() {
-        try! model.apply(.resume)
+        try! model.resume()
         presenter.present(game: model)
+    }
+
+    func end() {
+        model.end()
     }
 
     // Board topology

@@ -307,6 +307,22 @@ struct EndOfGame {
         }
     }
 
+    @Test("ending the game leaves no actions")
+    func endGame() throws {
+        let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one)
+
+        #expect(Rules.actions(in: Rules.end(in: state)).isEmpty)
+    }
+
+    @Test("resuming without a finished player is rejected")
+    func resumeNotOffered() throws {
+        let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one)
+
+        #expect(throws: GameError.notPaused) {
+            try Rules.resume(in: state)
+        }
+    }
+
     @Test("the finished players are listed in the order they finished")
     func finishingOrder() throws {
         let state = try State(pieces: [.one: ["0b", "0c", "0d", "39"], .two: ["1b", "1c", "1d", "09"], .three: ["25"]], player: .one)
@@ -337,13 +353,13 @@ struct Actions {
         #expect(Rules.actions(in: state) == [.move(from: "05", to: "08")])
     }
 
-    @Test("after a player finishes, the only action is resuming")
+    @Test("after a player finishes, no actions are offered")
     func afterFinish() throws {
         let state = try State(pieces: [.one: ["0b", "0c", "0d", "34"], .two: ["15"], .three: ["25"]], player: .one)
             .rolled(.six)
             .moved("34")
 
-        #expect(Rules.actions(in: state) == [.resume])
+        #expect(Rules.actions(in: state).isEmpty)
     }
 
     @Test("when the game is over, there are no actions")
@@ -373,15 +389,6 @@ struct Actions {
 
         #expect(throws: GameError.actionNotOffered) {
             try Rules.apply(.move(from: "05", to: "09"), in: state)
-        }
-    }
-
-    @Test("resuming without a finished player is rejected")
-    func resumeNotOffered() throws {
-        let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one)
-
-        #expect(throws: GameError.actionNotOffered) {
-            try Rules.apply(.resume, in: state)
         }
     }
 }
