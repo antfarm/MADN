@@ -22,7 +22,7 @@ final class GameViewModel {
     }
 
     func canMove(from field: Game.Field) -> Bool {
-        model.target(from: field) != nil
+        target(from: field) != nil
     }
 
     // Presented state
@@ -73,7 +73,7 @@ final class GameViewModel {
     }
 
     func move(from field: Game.Field) {
-        let move = (from: field, to: model.target(from: field)!)
+        let move = (from: field, to: target(from: field)!)
 
         let before = model
 
@@ -84,6 +84,16 @@ final class GameViewModel {
             print(error)
         }
     }
+
+    private func target(from field: Game.Field) -> Game.Field? {
+        for case .move(field, let target) in model.actions {
+            return target
+        }
+
+        return nil
+    }
+
+    // Game commands
 
     func start() {
         try! model.start()

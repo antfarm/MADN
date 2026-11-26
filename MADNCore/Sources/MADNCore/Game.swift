@@ -41,10 +41,6 @@ public struct Game: Codable {
         Rules.actions(in: state)
     }
 
-    public func target(from field: Field) -> Field? {
-        Rules.target(from: field, in: state)
-    }
-
     public mutating func apply(_ action: Action) throws {
         try Rules.apply(action, to: &state)
     }

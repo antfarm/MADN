@@ -29,6 +29,14 @@ extension State {
         return state
     }
 
+    func target(from field: Field) -> Field? {
+        for case .move(field, let target) in Rules.actions(in: self) {
+            return target
+        }
+
+        return nil
+    }
+
     func rolled(_ die: DieValue) -> State {
         var state = self
         try! Rules.apply(.roll(die), to: &state)
@@ -36,7 +44,7 @@ extension State {
     }
 
     func moved(_ field: Field) throws -> State {
-        let target = Rules.target(from: field, in: self)!
+        let target = self.target(from: field)!
 
         var state = self
         try Rules.apply(.move(from: field, to: target), to: &state)

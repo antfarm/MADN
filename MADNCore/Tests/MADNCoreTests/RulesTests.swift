@@ -156,7 +156,7 @@ struct OutField {
     func onlyWithSix(die: DieValue) throws {
         let state = try State(pieces: [.one: ["0A"]], player: .one, die: die)
 
-        #expect((Rules.target(from: "0A", in: state) != nil) == (die == .six))
+        #expect((state.target(from: "0A") != nil) == (die == .six))
     }
 
     @Test("cannot move with a 6 when an own piece is on the start field")
@@ -165,7 +165,7 @@ struct OutField {
             .adding([.one: ["00"]])
             .rolled(.six)
 
-        #expect(Rules.target(from: "0A", in: state) == nil)
+        #expect(state.target(from: "0A") == nil)
     }
 
     @Test("must move in with a 6")
@@ -192,21 +192,21 @@ struct TrackField {
     func crossesSectors() throws {
         let state = try State(pieces: [.two: ["38"]], player: .two).rolled(.three)
 
-        #expect(Rules.target(from: "38", in: state) == "01")
+        #expect(state.target(from: "38") == "01")
     }
 
     @Test("enters its own home row after its last track field")
     func entersHomeRow() throws {
         let state = try State(pieces: [.three: ["18"]], player: .three).rolled(.three)
 
-        #expect(Rules.target(from: "18", in: state) == "2b")
+        #expect(state.target(from: "18") == "2b")
     }
 
     @Test("can move to a field occupied by an opponent's piece")
     func targetOpponent() throws {
         let state = try State(pieces: [.one: ["05"], .two: ["08"]], player: .one).rolled(.three)
 
-        #expect(Rules.target(from: "05", in: state) == "08")
+        #expect(state.target(from: "05") == "08")
     }
 
     @Test("captures an opponent's piece when landing on it")
@@ -231,21 +231,21 @@ struct TrackField {
     func targetOwn() throws {
         let state = try State(pieces: [.one: ["05", "08"]], player: .one).rolled(.three)
 
-        #expect(Rules.target(from: "05", in: state) == nil)
+        #expect(state.target(from: "05") == nil)
     }
 
     @Test("cannot move past the end of its home row")
     func pastHomeRow() throws {
         let state = try State(pieces: [.one: ["39"]], player: .one, die: .six)
 
-        #expect(Rules.target(from: "39", in: state) == nil)
+        #expect(state.target(from: "39") == nil)
     }
 
     @Test("cannot pass a piece in the home row")
     func passInHomeRow() throws {
         let state = try State(pieces: [.one: ["38", "0a"]], player: .one, die: .five)
 
-        #expect(Rules.target(from: "38", in: state) == nil)
+        #expect(state.target(from: "38") == nil)
     }
 
     @Test("must leave its start field while pieces are staged")
@@ -270,14 +270,14 @@ struct HomeField {
     func movesToTarget() throws {
         let state = try State(pieces: [.one: ["0a"]], player: .one).rolled(.two)
 
-        #expect(Rules.target(from: "0a", in: state) == "0c")
+        #expect(state.target(from: "0a") == "0c")
     }
 
     @Test("cannot pass a piece in the home row")
     func passInHomeRow() throws {
         let state = try State(pieces: [.one: ["0a", "0b"]], player: .one).rolled(.two)
 
-        #expect(Rules.target(from: "0a", in: state) == nil)
+        #expect(state.target(from: "0a") == nil)
     }
 }
 
@@ -373,14 +373,14 @@ struct Actions {
     func target() throws {
         let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one, die: .three)
 
-        #expect(Rules.target(from: "05", in: state) == "08")
+        #expect(state.target(from: "05") == "08")
     }
 
     @Test("lists no moves for another player's pieces")
     func otherPlayer() throws {
         let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one).rolled(.three)
 
-        #expect(Rules.target(from: "15", in: state) == nil)
+        #expect(state.target(from: "15") == nil)
     }
 
     @Test("a move that is not offered is rejected")

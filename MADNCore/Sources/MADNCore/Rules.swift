@@ -124,14 +124,6 @@ extension Game {
             state.phase = .rolling(triesLeft: triesForTurn(in: state))
         }
 
-        static func target(from field: Field, in state: State) -> Field? {
-            for case .move(field, let target) in actions(in: state) {
-                return target
-            }
-
-            return nil
-        }
-
         private static func possibleMoves(with die: DieValue, in state: State) -> [Move] {
             let moves: [Move] = state.board.pieces(for: state.player).compactMap { field in
                 if field.isOut {
