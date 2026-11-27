@@ -2,9 +2,31 @@ extension Game {
 
     typealias Move = (from: Field, to: Field)
 
+    public enum Control: Equatable {
+        case start
+        case resume
+        case end
+    }
+
     public enum Action: Equatable {
         case roll(DieValue)
         case move(from: Field, to: Field)
+    }
+
+    public enum Command: Equatable {
+        case game(Control)
+        case player(Action)
+    }
+
+    public enum Change: Equatable {
+        case rolled(DieValue)
+        case couldNotMove
+        case moved(from: Field, to: Field)
+        case captured(at: Field, to: Field)
+        case finished(Player)
+        case turnPassed(to: Player)
+        case paused
+        case over
     }
 
     enum Rules {
@@ -62,112 +84,110 @@ extension Game {
             }
         }
 
-        private enum Command {
-            case start
-            case resume
-            case end
-
-            case action(Action)
-        }
-
-        static func start(in state: State) throws -> State {
-            var state = state
-            try apply(.start, to: &state)
-            return state
-        }
-
-        static func resume(in state: State) throws -> State {
-            var state = state
-            try apply(.resume, to: &state)
-            return state
-        }
-
-        static func end(in state: State) -> State {
-            var state = state
-            try! apply(.end, to: &state)
-            return state
-        }
-
-        static func apply(_ action: Action, to state: inout State) throws {
-            try apply(.action(action), to: &state)
-        }
-
-        private static func apply(_ command: Command, to state: inout State) throws {
-            if case .action(let action) = command, !actions(in: state).contains(action) {
+        static func execute(_ command: Command, on state: inout State) throws -> [Change] {
+            if case .player(let action) = command, !actions(in: state).contains(action) {
                 throw GameError.actionNotOffered
             }
+
+            let result: (phase: Phase, changes: [Change])
 
             switch (state.phase, command) {
 
             // Game commands
 
-            case (.notStarted, .start):
-                state.phase = .rolling(triesLeft: triesForTurn(in: state))
+            case (.notStarted, .game(.start)):
+                result = (phase: .rolling(triesLeft: triesForTurn(in: state)),
+                          changes: [])
 
-            case (_, .start):
+            case (_, .game(.start)):
                 throw GameError.alreadyStarted
 
 
-            case (.paused, .resume):
+            case (.paused, .game(.resume)):
                 advanceTurn(in: &state)
-                state.phase = .rolling(triesLeft: triesForTurn(in: state))
 
-            case (_, .resume):
+                result = (phase: .rolling(triesLeft: triesForTurn(in: state)),
+                          changes: [.turnPassed(to: state.player)])
+
+            case (_, .game(.resume)):
                 throw GameError.notPaused
 
-            case (_, .end):
-                state.phase = .over
+            case (_, .game(.end)):
+                result = (phase: .over,
+                          changes: [.over])
 
             // Player actions
 
-            case (.rolling, .action(.roll(let die))) where !possibleMoves(with: die, in: state).isEmpty:
-                state.phase = .moving(die)
+            case (.rolling, .player(.roll(let die))) where !possibleMoves(with: die, in: state).isEmpty:
+                result = (phase: .moving(die),
+                          changes: [.rolled(die)])
 
-            case (.rolling(let triesLeft), .action(.roll)) where triesLeft > 1:
-                state.phase = .rolling(triesLeft: triesLeft - 1)
+            case (.rolling(let triesLeft), .player(.roll(let die))) where triesLeft > 1:
+                result = (phase: .rolling(triesLeft: triesLeft - 1),
+                          changes: [.rolled(die), .couldNotMove])
 
-            case (.rolling, .action(.roll(.six))):
-                state.phase = .rolling(triesLeft: triesForTurn(in: state))
+            case (.rolling, .player(.roll(.six))):
+                result = (phase: .rolling(triesLeft: triesForTurn(in: state)),
+                          changes: [.rolled(.six), .couldNotMove])
 
-            case (.rolling, .action(.roll)):
+            case (.rolling, .player(.roll(let die))):
                 advanceTurn(in: &state)
-                state.phase = .rolling(triesLeft: triesForTurn(in: state))
 
-            case (.moving(let die), .action(.move(let from, let to))):
-                move(from, to, in: &state)
+                result = (phase: .rolling(triesLeft: triesForTurn(in: state)),
+                          changes: [.rolled(die), .couldNotMove, .turnPassed(to: state.player)])
+
+            case (.moving(let die), .player(.move(let from, let to))):
+                let outField = capture(at: to, in: &state)
+                try! state.board.move(from: from, to: to)
+
+                let changes: [Change] = if let outField {
+                    [.captured(at: to, to: outField), .moved(from: from, to: to)]
+                }
+                else {
+                    [.moved(from: from, to: to)]
+                }
+
+                if hasPlayerFinished(in: state) {
+                    state.finishedPlayers.append(state.player)
+                }
 
                 switch die {
                 case _ where isGameOver(in: state):
-                    state.phase = .over
+                    result = (phase: .over,
+                              changes: changes + [.finished(state.player), .over])
 
                 case _ where hasPlayerFinished(in: state):
-                    state.phase = .paused
+                    result = (phase: .paused,
+                              changes: changes + [.finished(state.player), .paused])
 
                 case .six:
-                    state.phase = .rolling(triesLeft: triesForTurn(in: state))
+                    result = (phase: .rolling(triesLeft: triesForTurn(in: state)),
+                              changes: changes)
 
                 default:
                     advanceTurn(in: &state)
-                    state.phase = .rolling(triesLeft: triesForTurn(in: state))
+
+                    result = (phase: .rolling(triesLeft: triesForTurn(in: state)),
+                              changes: changes + [.turnPassed(to: state.player)])
 
                 }
 
-            case (_, .action):
+            case (_, .player):
                 throw GameError.actionNotOffered
             }
+
+            state.phase = result.phase
+
+            return result.changes
         }
 
-        private static func move(_ field: Field, _ target: Field, in state: inout State) {
-            if let opponent = state.board.player(at: target) {
-                let outField = opponent.outFields.first(where: state.board.isEmpty)!
-                try! state.board.move(from: target, to: outField)
-            }
+        private static func capture(at field: Field, in state: inout State) -> Field? {
+            guard let opponent = state.board.player(at: field) else { return nil }
 
-            try! state.board.move(from: field, to: target)
+            let outField = opponent.outFields.first(where: state.board.isEmpty)!
+            try! state.board.move(from: field, to: outField)
 
-            if hasPlayerFinished(in: state) {
-                state.finishedPlayers.append(state.player)
-            }
+            return outField
         }
 
         private static func advanceTurn(in state: inout State) {

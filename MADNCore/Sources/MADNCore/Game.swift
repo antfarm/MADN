@@ -41,20 +41,9 @@ public struct Game: Codable {
         Rules.actions(in: state)
     }
 
-    public mutating func apply(_ action: Action) throws {
-        try Rules.apply(action, to: &state)
-    }
-
-    public mutating func start() throws {
-        state = try Rules.start(in: state)
-    }
-
-    public mutating func resume() throws {
-        state = try Rules.resume(in: state)
-    }
-
-    public mutating func end() {
-        state = Rules.end(in: state)
+    @discardableResult
+    public mutating func execute(_ command: Command) throws -> [Change] {
+        try Rules.execute(command, on: &state)
     }
 }
 

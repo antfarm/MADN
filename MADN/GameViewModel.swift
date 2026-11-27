@@ -60,7 +60,7 @@ final class GameViewModel {
         let before = model
 
         do {
-            try model.apply(.roll(die))
+            try model.execute(.player(.roll(die)))
 
             let hasMoves = model.actions.contains { action in
                 if case .move = action { true } else { false }
@@ -78,7 +78,7 @@ final class GameViewModel {
         let before = model
 
         do {
-            try model.apply(.move(from: move.from, to: move.to))
+            try model.execute(.player(.move(from: move.from, to: move.to)))
             presenter.present(move: move, from: before, to: model)
         } catch {
             print(error)
@@ -96,17 +96,17 @@ final class GameViewModel {
     // Game commands
 
     func start() {
-        try! model.start()
+        try! model.execute(.game(.start))
         presenter.present(game: model)
     }
 
     func resume() {
-        try! model.resume()
+        try! model.execute(.game(.resume))
         presenter.present(game: model)
     }
 
     func end() {
-        model.end()
+        try! model.execute(.game(.end))
     }
 
     // Board topology

@@ -39,7 +39,7 @@ extension State {
 
     func rolled(_ die: DieValue) -> State {
         var state = self
-        try! Rules.apply(.roll(die), to: &state)
+        _ = try! Rules.execute(.player(.roll(die)), on: &state)
         return state
     }
 
@@ -47,11 +47,13 @@ extension State {
         let target = self.target(from: field)!
 
         var state = self
-        try Rules.apply(.move(from: field, to: target), to: &state)
+        _ = try Rules.execute(.player(.move(from: field, to: target)), on: &state)
         return state
     }
 
     func resumed() -> State {
-        try! Rules.resume(in: self)
+        var state = self
+        _ = try! Rules.execute(.game(.resume), on: &state)
+        return state
     }
 }

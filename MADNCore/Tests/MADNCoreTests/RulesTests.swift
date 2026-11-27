@@ -303,23 +303,24 @@ struct EndOfGame {
         var state = try State(pieces: [.one: ["0a", "0b", "0c", "0d"]], player: .one)
 
         #expect(throws: GameError.actionNotOffered) {
-            try Rules.apply(.roll(.three), to: &state)
+            try Rules.execute(.player(.roll(.three)), on: &state)
         }
     }
 
     @Test("ending the game leaves no actions")
     func endGame() throws {
-        let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one)
+        var state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one)
+        _ = try Rules.execute(.game(.end), on: &state)
 
-        #expect(Rules.actions(in: Rules.end(in: state)).isEmpty)
+        #expect(Rules.actions(in: state).isEmpty)
     }
 
     @Test("resuming without a finished player is rejected")
     func resumeNotOffered() throws {
-        let state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one)
+        var state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one)
 
         #expect(throws: GameError.notPaused) {
-            try Rules.resume(in: state)
+            try Rules.execute(.game(.resume), on: &state)
         }
     }
 
@@ -388,7 +389,7 @@ struct Actions {
         var state = try State(pieces: [.one: ["05"], .two: ["15"]], player: .one, die: .three)
 
         #expect(throws: GameError.actionNotOffered) {
-            try Rules.apply(.move(from: "05", to: "09"), to: &state)
+            try Rules.execute(.player(.move(from: "05", to: "09")), on: &state)
         }
     }
 }
