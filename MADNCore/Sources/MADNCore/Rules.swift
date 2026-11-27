@@ -177,42 +177,65 @@ extension Game {
         }
 
         private static func possibleMoves(with die: DieValue, in state: State) -> [Move] {
-            let moves: [Move] = state.board.pieces(for: state.player).compactMap { field in
-                if field.isOut {
-                    guard die == .six else { return nil } // bring in only with a 6
-
-                    return (from: field, to: state.player.startField)
-                }
-                else {
-                    guard let steps = try? state.player.stepsTravelled(to: field), // move not possible
-                          let target = state.player.field(stepsTravelled: steps + die.rawValue) // past the home row
-                    else { return nil }
-
-                    guard (steps + 1 ..< steps + die.rawValue) // passing a piece in the home row
-                        .compactMap(state.player.field(stepsTravelled:))
-                        .filter(\.isHome)
-                        .allSatisfy(state.board.isEmpty)
-                    else { return nil }
-
-                    return (from: field, to: target)
-                }
-            }
-            .filter { state.board.player(at: $0.to) != state.player } // target not occupied by an own piece
-
             let pieces = state.board.pieces(for: state.player)
 
-            if pieces.contains(where: \.isOut) {
-                let bringInMoves = moves.filter { $0.from.isOut }
-                guard bringInMoves.isEmpty else { return bringInMoves } // bringing in a piece comes first
+            // Moves that bring a piece in with a 6...
 
-                let leaveStartMoves = moves.filter { $0.from == state.player.startField }
-                guard leaveStartMoves.isEmpty else { return leaveStartMoves } // clearing the start field comes next
+            let outPieces = pieces.filter(\.isOut)
+
+            let bringInMoves: [Move] = die == .six
+                ? outPieces.map { (from: $0, to: state.player.startField) }
+                : []
+
+            // Moves on the track...
+
+            let trackPieces = pieces.subtracting(outPieces)
+            let path = state.player.path
+
+            let trackMoves: [Move] = trackPieces
+                .map { try! state.player.stepsTravelled(to: $0) }
+                // not moving past the last field in the home row
+                .filter { steps in steps + die.rawValue < path.count }
+                // not passing a piece in the home row
+                .filter { steps in
+                    path[steps + 1 ..< steps + die.rawValue]
+                        .filter(\.isHome)
+                        .allSatisfy(state.board.isEmpty)
+                }
+                .map { steps in (from: path[steps], to: path[steps + die.rawValue]) }
+
+            // ...that would not land on one of the player's own pieces
+
+            let possibleMoves = (bringInMoves + trackMoves)
+                .filter { state.board.player(at: $0.to) != state.player }
+
+            // Mandatory moves
+
+            let mandatoryMoves = MandatoryMoveCondition.allCases.lazy
+                .map { condition in
+                    possibleMoves.filter { condition.applies(to: $0, in: state) }
+                }
+                .first { !$0.isEmpty }
+
+            return mandatoryMoves ?? possibleMoves
+        }
+
+        private enum MandatoryMoveCondition: CaseIterable {
+            case bringingIn
+            case clearingStart
+            case capturing
+
+            func applies(to move: Move, in state: State) -> Bool {
+                switch self {
+                case .bringingIn: move.from.isOut
+
+                case .clearingStart:
+                    state.board.pieces(for: state.player).contains(where: \.isOut)
+                        && move.from == state.player.startField
+
+                case .capturing: !state.board.isEmpty(move.to)
+                }
             }
-
-            let captureMoves = moves.filter { !state.board.isEmpty($0.to) }
-            guard captureMoves.isEmpty else { return captureMoves } // capturing comes next
-
-            return moves
         }
 
         static func triesForTurn(in state: State) -> Int {
