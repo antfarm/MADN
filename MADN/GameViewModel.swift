@@ -29,11 +29,15 @@ final class GameViewModel {
 
     private let presenter: Presenter
 
-    var presented: PresentedState { presenter.state }
+    private var presented: PresentedState { presenter.state }
 
     var isPresenting: Bool { presenter.isPresenting }
 
     var dieRotation: Double { presenter.dieRotation }
+
+    var player: Game.Player { presented.player }
+
+    var die: Int? { presented.die }
 
     var isPaused: Bool { presented.isPaused }
 

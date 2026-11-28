@@ -47,19 +47,19 @@ struct BoardView: View {
             }
 
             TrackLine(fieldCenters: fieldCenters)
-                .id(game.presented.player)
+                .id(game.player)
                 .transition(.opacity)
         }
-        .overlay(alignment: game.corner(for: game.presented.player)) {
+        .overlay(alignment: game.corner(for: game.player)) {
             if !hidesDie {
                 DieView(
-                    value: game.presented.die,
-                    color: game.color(for: game.presented.player),
+                    value: game.die,
+                    color: game.color(for: game.player),
                     onRoll: { game.roll() }
                 )
                 .disabled(!game.canRoll)
                 .rotationEffect(.degrees(game.dieRotation))
-                .rotationEffect(game.rotation(for: game.presented.player))
+                .rotationEffect(game.rotation(for: game.player))
                 .frame(width: Self.cellSize, height: Self.cellSize)
                 .padding(2.25 * Self.cellSize)
             }
