@@ -123,7 +123,9 @@ final class GameViewModel {
         BoardLayout.field(row: row, column: column)
     }
 
-    let trackCells = BoardLayout.trackCells
+    var connectedCells: [(row: Int, column: Int)] {
+        presented.player.path.compactMap { BoardLayout.cell(of: $0) }
+    }
 
     // Player colors
 

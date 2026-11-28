@@ -41,12 +41,14 @@ struct BoardView: View {
             }
         }
         .background {
-            let fieldCenters = game.trackCells.map {
+            let fieldCenters = game.connectedCells.map {
                 CGPoint(x: (CGFloat($0.column) + 0.5) * Self.cellSize,
                         y: (CGFloat($0.row) + 0.5) * Self.cellSize)
             }
 
             TrackLine(fieldCenters: fieldCenters)
+                .id(game.presented.player)
+                .transition(.opacity)
         }
         .overlay(alignment: game.corner(for: game.presented.player)) {
             if !hidesDie {
@@ -73,7 +75,6 @@ struct TrackLine: View {
     var body: some View {
         Path { path in
             path.addLines(fieldCenters)
-            path.closeSubpath()
         }
         .stroke(.primary, lineWidth: 4)
     }

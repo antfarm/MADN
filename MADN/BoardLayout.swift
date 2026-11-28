@@ -34,12 +34,10 @@ enum BoardLayout {
         boardMap[row][column]
     }
 
-    private static func cell(of field: Game.Field) -> (row: Int, column: Int)? {
+    static func cell(of field: Game.Field) -> (row: Int, column: Int)? {
         for (row, columns) in boardMap.enumerated() {
             if let column = columns.firstIndex(of: field) { return (row, column) }
         }
         return nil
     }
-
-    static let trackCells = Game.Field.trackFields.compactMap { cell(of: $0) }
 }
